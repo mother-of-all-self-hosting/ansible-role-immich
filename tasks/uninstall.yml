@@ -16,6 +16,7 @@
       with_items:
         - "{{ immich_identifier }}.service"
         - "{{ immich_machine_learning_identifier }}.service"
+        - "{{ immich_database }}.service"
 
     - name: Ensure immich systemd service does not exist
       ansible.builtin.file:
@@ -23,6 +24,7 @@
         state: absent
       with_items:
         - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_identifier }}.service"
+        - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_database_identifier }}.service"
         - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
 
     - name: Ensure immich base directory doesn't exist
