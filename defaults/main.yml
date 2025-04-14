@@ -1,5 +1,5 @@
 ---
-# Project source code URL: https://github.com/IUCCA/immich
+# Project source code URL: https://github.com/IUCCA/ansible-role-immich
 
 immich_enabled: true
 
@@ -195,7 +195,7 @@ immich_database_name: 'immich'
 immich_redis_url: ''
 immich_redis_socket: ''
 immich_redis_hostname: ''
-immich_redis_port: ''
+immich_redis_port: '6379'
 immich_redis_username: ''
 immich_redis_password: ''
 immich_redis_dbindex: ''
