@@ -1,0 +1,48 @@
+[Unit]
+Description=immich API ({{ immich_identifier }})
+{% for service in immich_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+DefaultDependencies=no
+
+[Service]
+Type=simple
+Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_identifier }} 2>/dev/null || true'
+
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+                --rm \
+                --name={{ immich_identifier }} \
+                --log-driver=none \
+                --cap-drop=ALL \
+                {% if immich_hardware_acceleration == 'cuda' %}
+                --device=/dev/nvidia0:/dev/nvidia0 \
+                {% endif %}
+                {% if immich_container_http_host_bind_port %}
+                -p {{ immich_container_http_host_bind_port }}:{{ immich_container_http_port }} \
+                {% endif %}
+                --label-file={{ immich_base_path }}/labels-api \
+                --network={{ immich_container_network }} \
+                --mount type=bind,src={{ immich_upload_path }},dst=/usr/src/app/upload \
+                --env-file={{ immich_base_path }}/env \
+                {% if immich_container_extra_arguments | length > 0 %}
+                {{ immich_container_extra_arguments | join(' ') }} \
+                {% endif %}
+                {{ immich_container_image }}
+
+{% for network in immich_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ immich_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ immich_identifier }}
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_identifier }} 2>/dev/null || true'
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ immich_identifier }}
+
+[Install]
+WantedBy=multi-user.target

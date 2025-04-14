@@ -1,0 +1,21 @@
+---
+
+- block:
+    - when: immich_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+
+    - when: immich_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+
+  tags:
+    - setup-all
+    - setup-immich
+    - install-all
+    - install-immich
+
+- block:
+    - when: not immich_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+  tags:
+    - setup-all
+    - setup-immich
