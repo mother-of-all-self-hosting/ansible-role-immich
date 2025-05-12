@@ -34,6 +34,7 @@ traefik.http.routers.{{ immich_identifier }}.service={{ immich_identifier }}
 traefik.http.routers.{{ immich_identifier }}.middlewares={{ middlewares | join(',') }}
 {% endif %}
 traefik.http.routers.{{ immich_identifier }}.entrypoints={{ immich_container_labels_traefik_entrypoints }}
+
 traefik.http.routers.{{ immich_identifier }}.tls={{ immich_container_labels_traefik_tls | to_json }}
 {% if immich_container_labels_traefik_tls %}
 traefik.http.routers.{{ immich_identifier }}.tls.certResolver={{ immich_container_labels_traefik_tls_certResolver }}

@@ -16,14 +16,13 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --rm \
                 --name={{ immich_identifier }} \
                 --log-driver=none \
-                --cap-drop=ALL \
                 {% if immich_hardware_acceleration == 'cuda' %}
-                --device=/dev/nvidia0:/dev/nvidia0 \
+                --gpus all\
                 {% endif %}
                 {% if immich_container_http_host_bind_port %}
                 -p {{ immich_container_http_host_bind_port }}:{{ immich_container_http_port }} \
                 {% endif %}
-                --label-file={{ immich_base_path }}/labels-api \
+                --label-file={{ immich_base_path }}/labels \
                 --network={{ immich_container_network }} \
                 --mount type=bind,src={{ immich_upload_path }},dst=/usr/src/app/upload \
                 --env-file={{ immich_base_path }}/env \

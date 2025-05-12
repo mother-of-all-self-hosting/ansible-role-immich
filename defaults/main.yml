@@ -1,5 +1,5 @@
 ---
-# Project source code URL: https://github.com/IUCCA/ansible-role-immich
+# Project source code URL: https://github.com/immich-app/immich
 
 immich_enabled: true
 
@@ -11,9 +11,7 @@ immich_machine_learning_cache_path: "{{ immich_base_path }}/cache"
 immich_database_path: "{{ immich_base_path }}/database"
 immich_upload_path: "{{ immich_base_path }}/upload"
 
-immich_version: 1.131.3
-
-# set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+immich_version: v1.132.1
 
 immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 immich_database_version: pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
@@ -121,9 +119,13 @@ immich_container_labels_traefik_additional_response_headers_custom: {}
 #   my.label=1
 #   another.label="here"
 immich_container_labels_additional_labels: ''
+immich_database_container_labels_additional_labels: ''
+immich_machine_learning_container_labels_additional_labels: ''
 
 # A list of extra arguments to pass to the container (`docker run` command)
 immich_container_extra_arguments: []
+immich_database_container_extra_arguments: []
+immich_machine_learning_container_extra_arguments: []
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
@@ -186,11 +188,11 @@ immich_environment_variables_additional_variables: ''
 
 
 immich_database_url: ''
-immich_database_hostname: ''
+immich_database_hostname: 'mash-immich-database'
 immich_database_port: 5432
 immich_database_username: ''
 immich_database_password: ''
-immich_database_name: 'immich'
+immich_database_name: immich
 
 immich_redis_url: ''
 immich_redis_socket: ''
@@ -198,7 +200,10 @@ immich_redis_hostname: ''
 immich_redis_port: '6379'
 immich_redis_username: ''
 immich_redis_password: ''
-immich_redis_dbindex: ''
+immich_redis_dbindex: '0'
 
 immich_timezone: Etc/UTC
+
+# immich_hardware_acceleration set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+# only empty or nvenc (nvidia cuda) is supportet at the moment
 immich_hardware_acceleration: ''
