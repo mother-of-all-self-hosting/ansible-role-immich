@@ -11,7 +11,7 @@ immich_machine_learning_cache_path: "{{ immich_base_path }}/cache"
 immich_database_path: "{{ immich_base_path }}/database"
 immich_upload_path: "{{ immich_base_path }}/upload"
 
-immich_version: v1.132.1
+immich_version: v1.141.1
 
 immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 immich_database_version: pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
