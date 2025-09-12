@@ -10,9 +10,10 @@
     - immich_gid
     - immich_hostname
     - immich_path_prefix
-    - immich_container_network
+    - immich_server_container_network
+    - immich_machine_learning_container_network
 
-- when: immich_container_labels_traefik_enabled | bool
+- when: immich_server_container_labels_traefik_enabled | bool
   block:
     - name: Fail if required immich Traefik settings not defined
       ansible.builtin.fail:
@@ -20,14 +21,14 @@
           You need to define a required configuration setting (`{{ item }}`).
       when: "vars[item] == ''"
       with_items:
-        - immich_container_labels_traefik_hostname
-        - immich_container_labels_traefik_path_prefix
+        - immich_server_container_labels_traefik_hostname
+        - immich_server_container_labels_traefik_path_prefix
 
     # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
-    # Knowing that `immich_container_labels_traefik_path_prefix` does not end with a slash
+    # Knowing that `immich_server_container_labels_traefik_path_prefix` does not end with a slash
     # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
-    - name: Fail if immich_container_labels_traefik_path_prefix ends with a slash
+    - name: Fail if immich_server_container_labels_traefik_path_prefix ends with a slash
       ansible.builtin.fail:
         msg: >-
-          immich_container_labels_traefik_path_prefix (`{{ immich_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/immich`).
-      when: "immich_container_labels_traefik_path_prefix != '/' and immich_container_labels_traefik_path_prefix[-1] == '/'"
+          immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/immich`).
+      when: "immich_server_container_labels_traefik_path_prefix != '/' and immich_server_container_labels_traefik_path_prefix[-1] == '/'"

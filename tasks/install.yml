@@ -9,42 +9,33 @@
     group: "{{ immich_gid }}"
   with_items:
     - "{{ immich_base_path }}"
-    - "{{ immich_database_path }}"
+    - "{{ immich_server_base_path }}"
+    - "{{ immich_machine_learning_base_path }}"
     - "{{ immich_upload_path }}"
     - "{{ immich_machine_learning_cache_path }}"
 
 - name: Ensure immich support files installed
   ansible.builtin.template:
-    src: "{{ role_path }}/templates/{{ item }}.j2"
-    dest: "{{ immich_base_path }}/{{ item }}"
+    src: "{{ role_path }}/{{ item.src }}"
+    dest: "{{ item.dst }}"
     mode: "0640"
     owner: "{{ immich_uid }}"
     group: "{{ immich_gid }}"
   with_items:
-    - env
-    - labels
-    - labels-machine-learning
-    - labels-database
+    - src: templates/server/env.j2
+      dst: "{{ immich_server_base_path }}/env"
+    - src: templates/server/labels.j2
+      dst: "{{ immich_server_base_path }}/labels"
+    - src: templates/machine-learning/env.j2
+      dst: "{{ immich_machine_learning_base_path }}/env"
 
 - name: Ensure immich container image is pulled via community.docker.docker_image
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
   community.docker.docker_image:
-    name: "{{ immich_container_image }}"
+    name: "{{ immich_server_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ immich_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else immich_container_image_force_pull }}"
-  register: image_pull_result
-  retries: "{{ devture_playbook_help_container_retries_count }}"
-  delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: image_pull_result is not failed
-
-- name: Ensure immich database container image is pulled via community.docker.docker_image
-  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
-  community.docker.docker_image:
-    name: "{{ immich_database_container_image }}"
-    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ immich_database_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else immich_database_container_image_force_pull }}"
+    force_source: "{{ immich_server_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else immich_server_container_image_force_pull }}"
   register: image_pull_result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
@@ -65,14 +56,14 @@
 - name: Ensure immich container image is pulled via command
   when: devture_systemd_docker_base_container_image_pull_method == 'command'
   ansible.builtin.command:
-    cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ immich_container_image }}"
+    cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ immich_server_container_image }}"
   register: image_pull_result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: image_pull_result is not failed
   changed_when: "'Downloaded newer image' in image_pull_result.stdout"
   with_items:
-    - {image: "{{ immich_container_image }}"}
+    - {image: "{{ immich_server_container_image }}"}
     - {image: "{{ immich_machine_learning_container_image }}"}
     - {image: "{{ immich_database_container_image }}"}
 
@@ -80,9 +71,10 @@
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
   community.general.docker_network:
     enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
-    name: "{{ immich_container_network }}"
+    name: "{{ item }}"
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
+  with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
 
 - name: Ensure immich container network is created via ansible.builtin.command
   when: devture_systemd_docker_base_container_network_creation_method == 'command'
@@ -91,17 +83,19 @@
       {{ devture_systemd_docker_base_host_command_docker }} network create
       {% if devture_systemd_docker_base_ipv6_enabled %}--ipv6{% endif %}
       {{ devture_systemd_docker_base_container_networks_driver_options_string }}
-      {{ immich_container_network }}
+      {{ item }}
   register: network_creation_result
   changed_when: network_creation_result.rc == 0
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
+  with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
 
-- name: Ensure immich systemd service is present
+- name: Ensure immich systemd services ares present
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   with_items:
-    - {src: "{{ role_path }}/templates/systemd/immich.service.j2", dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_identifier }}.service"}
-    - {src: "{{ role_path }}/templates/systemd/immich-database.service.j2", dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_database_identifier }}.service"}
-    - {src: "{{ role_path }}/templates/systemd/immich-machine-learning.service.j2", dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"}
+    - src: "{{ role_path }}/templates/server/immich-server.service.j2"
+      dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
+    - src: "{{ role_path }}/templates/machine-learning/immich-machine-learning.service.j2"
+      dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"

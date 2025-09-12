@@ -1,0 +1,56 @@
+[Unit]
+Description=immich server ({{ immich_server_identifier }})
+{% for service in immich_server_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+{% for service in immich_server_systemd_wanted_services_list %}
+Wants={{ service }}
+{% endfor %}
+DefaultDependencies=no
+
+[Service]
+Type=simple
+Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_server_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_server_identifier }} 2>/dev/null || true'
+
+{#
+    The machine-learning container is linked as `immich-machine-learning`,
+    because that's the default configuration (which is only changeable from the UI).
+    Ref: https://immich.app/docs/administration/system-settings#url
+#}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+                --rm \
+                --name={{ immich_server_identifier }} \
+                --log-driver=none \
+                {% if immich_hardware_acceleration == 'cuda' %}
+                --gpus all\
+                {% endif %}
+                {% if immich_server_container_http_host_bind_port %}
+                -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_container_http_port }} \
+                {% endif %}
+                --link {{ immich_machine_learning_identifier }}:immich-machine-learning \
+                --label-file={{ immich_server_base_path }}/labels \
+                --network={{ immich_server_container_network }} \
+                --mount type=bind,src={{ immich_upload_path }},dst=/data \
+                --env-file={{ immich_server_base_path }}/env \
+                {% if immich_server_container_extra_arguments | length > 0 %}
+                {{ immich_server_container_extra_arguments | join(' ') }} \
+                {% endif %}
+                {{ immich_server_container_image }}
+
+{% for network in immich_server_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ immich_server_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ immich_server_identifier }}
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_server_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_server_identifier }} 2>/dev/null || true'
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ immich_server_identifier }}
+
+[Install]
+WantedBy=multi-user.target

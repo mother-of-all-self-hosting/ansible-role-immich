@@ -1,17 +1,24 @@
 [Unit]
 Description=immich machine learning ({{ immich_machine_learning_identifier }})
-{% for service in immich_systemd_required_services_list %}
+{% for service in immich_machine_learning_systemd_required_services_list %}
 Requires={{ service }}
 After={{ service }}
+{% endfor %}
+{% for service in immich_machine_learning_systemd_wanted_services_list %}
+Wants={{ service }}
 {% endfor %}
 DefaultDependencies=no
 
 [Service]
 Type=simple
 Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
-ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_machine_learning_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_machine_learning_identifier }} 2>/dev/null || true'
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_machine_learning_identifier }} 2>/dev/null || true'
 
+{#
+    We drop all capabilities, but re-add some to allow
+    the service to access the `/cache` directory (owned by a different user on the host).
+#}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --rm \
                 --name={{ immich_machine_learning_identifier }} \
@@ -20,19 +27,23 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 {% endif %}
                 --log-driver=none \
                 --cap-drop=ALL \
-                --label-file={{ immich_base_path }}/labels-machine-learning \
-                --network={{ immich_container_network }} \
+                --cap-add=CHOWN \
+                --cap-add=DAC_OVERRIDE \
+                --network={{ immich_machine_learning_container_network }} \
                 --mount type=bind,src={{ immich_machine_learning_cache_path }},dst=/cache \
-                --env-file={{ immich_base_path }}/env \
+                --env-file={{ immich_machine_learning_base_path }}/env \
                 {% if immich_machine_learning_container_extra_arguments | length > 0 %}
                 {{ immich_machine_learning_container_extra_arguments | join(' ') }} \
                 {% endif %}
                 {{ immich_machine_learning_container_image }}
 
+{% for network in immich_machine_learning_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ immich_machine_learning_identifier }}
+{% endfor %}
 
 ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ immich_machine_learning_identifier }}
 
-ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_machine_learning_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ immich_machine_learning_identifier }} 2>/dev/null || true'
 ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ immich_machine_learning_identifier }} 2>/dev/null || true'
 Restart=always
 RestartSec=30
