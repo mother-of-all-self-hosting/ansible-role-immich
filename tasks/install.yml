@@ -29,42 +29,35 @@
     - src: templates/machine-learning/env.j2
       dst: "{{ immich_machine_learning_base_path }}/env"
 
-- name: Ensure Immich container image is pulled via community.docker.docker_image
+- name: Ensure Immich container images are pulled via community.docker.docker_image
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
   community.docker.docker_image:
-    name: "{{ immich_server_container_image }}"
+    name: "{{ item.image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ immich_server_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else immich_server_container_image_force_pull }}"
+    force_source: "{{ item.force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else item.force_pull }}"
   register: image_pull_result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: image_pull_result is not failed
+  with_items:
+    - image: "{{ immich_server_container_image }}"
+      force_pull: "{{ immich_server_container_image_force_pull }}"
+    - image: "{{ immich_machine_learning_container_image }}"
+      force_pull: "{{ immich_machine_learning_container_image_force_pull }}"
 
-- name: Ensure Immich machine learning container image is pulled via community.docker.docker_image
-  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
-  community.docker.docker_image:
-    name: "{{ immich_machine_learning_container_image }}"
-    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ immich_machine_learning_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else immich_machine_learning_container_image_force_pull }}"
-  register: image_pull_result
-  retries: "{{ devture_playbook_help_container_retries_count }}"
-  delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: image_pull_result is not failed
-
-- name: Ensure Immich container image is pulled via command
+- name: Ensure Immich container images are pulled via command
   when: devture_systemd_docker_base_container_image_pull_method == 'command'
   ansible.builtin.command:
-    cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ immich_server_container_image }}"
+    cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ item.image }}"
   register: image_pull_result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: image_pull_result is not failed
   changed_when: "'Downloaded newer image' in image_pull_result.stdout"
   with_items:
-    - {image: "{{ immich_server_container_image }}"}
-    - {image: "{{ immich_machine_learning_container_image }}"}
+    - image: "{{ immich_server_container_image }}"
+    - image: "{{ immich_machine_learning_container_image }}"
 
 - name: Ensure Immich container networks are created via community.docker.docker_network
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
