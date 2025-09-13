@@ -52,9 +52,9 @@ immich_machine_learning_container_image_registry_prefix_upstream: "{{ immich_mac
 immich_machine_learning_container_image_registry_prefix_upstream_default: ghcr.io/
 immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_container_image.endswith(':latest') }}"
 
-# Controls whether the container exposes its HTTP port (tcp/80 in the container).
+# Controls whether the container exposes its HTTP port (tcp/2283 in the container).
 #
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
 # See immich_server_container_http_port
 immich_server_container_http_host_bind_port: ''
 
@@ -63,6 +63,15 @@ immich_server_container_network: "{{ immich_identifier }}"
 
 # The port number in the server container
 immich_server_container_http_port: 2283
+
+# The port number in the machine-learning container
+immich_machine_learning_container_http_port: 3003
+
+# Controls whether the container exposes its HTTP port (tcp/3003 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:3003"), or empty string to not expose.
+# See immich_machine_learning_container_http_port
+immich_machine_learning_container_http_host_bind_port: ''
 
 # A list of additional container networks that the server container would be connected to.
 # The role does not create these networks, so make sure they already exist.
@@ -219,6 +228,9 @@ immich_server_environment_variables_db_url: |-
 
 # Additional environment variables for the server container
 immich_server_environment_variables_additional_variables: ''
+
+# Controls the IMMICH_PORT environment variable for the machine-learning component
+immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_container_http_port }}"
 
 # Additional environment variables for the machine-learning container
 immich_machine_learning_environment_variables_additional_variables: ''
