@@ -1,22 +1,20 @@
 ---
 # Project source code URL: https://github.com/immich-app/immich
 
+########################################################################
+#                                                                      #
+# common                                                               #
+#                                                                      #
+########################################################################
+
 immich_enabled: true
 
 immich_identifier: immich
 
-immich_server_identifier: "{{ immich_identifier }}-server"
-immich_machine_learning_identifier: "{{ immich_identifier }}-machine-learning"
-
 immich_base_path: "{{ immich_identifier }}"
-immich_server_base_path: "{{ immich_base_path }}/server"
-immich_machine_learning_base_path: "{{ immich_base_path }}/machine-learning"
-immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cache"
 immich_upload_path: "{{ immich_base_path }}/upload"
 
 immich_version: v1.142.0
-
-immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 
 immich_uid: ''
 immich_gid: ''
@@ -38,40 +36,56 @@ immich_path_prefix: /
 # It should not end with a slash.
 immich_base_url: "{{ immich_scheme }}://{{ immich_hostname }}{{ '' if immich_path_prefix == '/' else immich_path_prefix }}"
 
+immich_database_hostname: ''
+immich_database_port: 5432
+immich_database_username: immich
+immich_database_password: ''
+immich_database_name: immich
+immich_database_sslmode: require
+
+immich_redis_url: ''
+immich_redis_socket: ''
+immich_redis_hostname: ''
+immich_redis_port: '6379'
+immich_redis_username: ''
+immich_redis_password: ''
+immich_redis_dbindex: '0'
+
+# immich_hardware_acceleration set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+# only empty or nvenc (nvidia cuda) is supported at the moment
+immich_hardware_acceleration: ''
+
+########################################################################
+#                                                                      #
+# /common                                                              #
+#                                                                      #
+########################################################################
+
+
+########################################################################
+#                                                                      #
+# server                                                               #
+#                                                                      #
+########################################################################
+
+immich_server_identifier: "{{ immich_identifier }}-server"
+
+immich_server_base_path: "{{ immich_base_path }}/server"
+
+immich_server_version: "{{ immich_version }}"
+
+# The HTTP port number used by the server component
+immich_server_container_http_port: 2283
+
 immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
-immich_server_container_image_tag: "{{ immich_version }}"
+immich_server_container_image_tag: "{{ immich_server_version }}"
 immich_server_container_image_registry_prefix: "{{ immich_server_container_image_registry_prefix_upstream }}"
 immich_server_container_image_registry_prefix_upstream: "{{ immich_server_container_image_registry_prefix_upstream_default }}"
 immich_server_container_image_registry_prefix_upstream_default: ghcr.io/
 immich_server_container_image_force_pull: "{{ immich_server_container_image.endswith(':latest') }}"
 
-immich_machine_learning_container_image: "{{ immich_machine_learning_container_image_registry_prefix }}immich-app/immich-machine-learning:{{ immich_machine_learning_container_image_tag }}"
-immich_machine_learning_container_image_tag: "{{ immich_machine_learning_version }}"
-immich_machine_learning_container_image_registry_prefix: "{{ immich_machine_learning_container_image_registry_prefix_upstream }}"
-immich_machine_learning_container_image_registry_prefix_upstream: "{{ immich_machine_learning_container_image_registry_prefix_upstream_default }}"
-immich_machine_learning_container_image_registry_prefix_upstream_default: ghcr.io/
-immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_container_image.endswith(':latest') }}"
-
-# Controls whether the container exposes its HTTP port (tcp/2283 in the container).
-#
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
-# See immich_server_container_http_port
-immich_server_container_http_host_bind_port: ''
-
 # The base container network for the server service. It will be auto-created by this role if it doesn't exist already.
 immich_server_container_network: "{{ immich_identifier }}"
-
-# The port number in the server container
-immich_server_container_http_port: 2283
-
-# The port number in the machine-learning container
-immich_machine_learning_container_http_port: 3003
-
-# Controls whether the container exposes its HTTP port (tcp/3003 in the container).
-#
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:3003"), or empty string to not expose.
-# See immich_machine_learning_container_http_port
-immich_machine_learning_container_http_host_bind_port: ''
 
 # A list of additional container networks that the server container would be connected to.
 # The role does not create these networks, so make sure they already exist.
@@ -80,15 +94,11 @@ immich_server_container_additional_networks: "{{ immich_server_container_additio
 immich_server_container_additional_networks_auto: []
 immich_server_container_additional_networks_custom: []
 
-# The base container network for the machine-learning service. It will be auto-created by this role if it doesn't exist already.
-immich_machine_learning_container_network: "{{ immich_server_container_network }}"
-
-# A list of additional container networks that the machine-learning container would be connected to.
-# The role does not create these networks, so make sure they already exist.
-# Use this to expose this container to another reverse proxy, which runs in a different container network.
-immich_machine_learning_container_additional_networks: "{{ immich_machine_learning_container_additional_networks_auto + immich_machine_learning_container_additional_networks_custom }}"
-immich_machine_learning_container_additional_networks_auto: []
-immich_machine_learning_container_additional_networks_custom: []
+# Controls whether the container exposes its HTTP port (tcp/2283 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
+# See immich_server_container_http_port
+immich_server_container_http_host_bind_port: ''
 
 # A list of additional "volumes" to mount in the container.
 # This list gets populated dynamically at runtime. You can provide a different default value,
@@ -118,11 +128,11 @@ immich_server_container_labels_traefik_additional_response_headers: "{{ immich_s
 immich_server_container_labels_traefik_additional_response_headers_auto: |
   {{
     {}
-    | combine ({'X-XSS-Protection': immich_http_header_xss_protection} if immich_http_header_xss_protection else {})
-    | combine ({'X-Content-Type-Options': immich_http_header_content_type_options} if immich_http_header_content_type_options else {})
-    | combine ({'Content-Security-Policy': immich_http_header_content_security_policy} if immich_http_header_content_security_policy else {})
-    | combine ({'Permission-Policy': immich_http_header_content_permission_policy} if immich_http_header_content_permission_policy else {})
-    | combine ({'Strict-Transport-Security': immich_http_header_strict_transport_security} if immich_http_header_strict_transport_security and immich_server_container_labels_traefik_tls else {})
+    | combine ({'X-XSS-Protection': immich_server_http_header_xss_protection} if immich_server_http_header_xss_protection else {})
+    | combine ({'X-Content-Type-Options': immich_server_http_header_content_type_options} if immich_server_http_header_content_type_options else {})
+    | combine ({'Content-Security-Policy': immich_server_http_header_content_security_policy} if immich_server_http_header_content_security_policy else {})
+    | combine ({'Permission-Policy': immich_server_http_header_content_permission_policy} if immich_server_http_header_content_permission_policy else {})
+    | combine ({'Strict-Transport-Security': immich_server_http_header_strict_transport_security} if immich_server_http_header_strict_transport_security and immich_server_container_labels_traefik_tls else {})
   }}
 immich_server_container_labels_traefik_additional_response_headers_custom: {}
 
@@ -137,54 +147,6 @@ immich_server_container_labels_additional_labels: ''
 
 # A list of extra arguments to pass to the container (`docker run` command)
 immich_server_container_extra_arguments: []
-immich_machine_learning_container_extra_arguments: []
-
-# Specifies the value of the `X-XSS-Protection` header
-# Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
-#
-# Learn more about it is here:
-# - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
-# - https://portswigger.net/web-security/cross-site-scripting/reflected
-immich_http_header_xss_protection: "1; mode=block"
-
-# Specifies the value of the `X-Content-Type-Options` header.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-immich_http_header_content_type_options: nosniff
-
-# Specifies the value of the `Content-Security-Policy` header.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
-immich_http_header_content_security_policy: frame-ancestors 'self'
-
-# Specifies the value of the `Permission-Policy` header.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permission-Policy
-immich_http_header_content_permission_policy: "{{ 'interest-cohort=()' if immich_floc_optout_enabled else '' }}"
-
-# Specifies the value of the `Strict-Transport-Security` header.
-# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
-immich_http_header_strict_transport_security: "max-age=31536000; includeSubDomains{{ '; preload' if immich_hsts_preload_enabled else '' }}"
-
-# Controls whether to immich a "Permissions-Policy interest-cohort=();" header along with all responses
-#
-# Learn more about what it is here:
-# - https://www.eff.org/deeplinks/2021/03/googles-floc-terrible-idea
-# - https://paramdeo.com/blog/opting-your-website-out-of-googles-floc-network
-# - https://amifloced.org/
-#
-# Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
-# See: `immich_content_permission_policy`
-immich_floc_optout_enabled: true
-
-# Controls if HSTS preloading is enabled
-#
-# In its strongest and recommended form, the [HSTS policy](https://www.chromium.org/hsts) includes all subdomains, and
-# indicates a willingness to be "preloaded" into browsers:
-# `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
-# For more information visit:
-# - https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
-# - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
-# - https://hstspreload.org/#opt-in
-# See: `immich_http_header_strict_transport_security`
-immich_hsts_preload_enabled: false
 
 # List of systemd services that the immich/server systemd service depends on
 immich_server_systemd_required_services_list: "{{ immich_server_systemd_required_services_list_default + immich_server_systemd_required_services_list_auto + immich_server_systemd_required_services_list_custom }}"
@@ -194,15 +156,6 @@ immich_server_systemd_required_services_list_custom: []
 
 # List of systemd services that the immich/server systemd service wants
 immich_server_systemd_wanted_services_list: []
-
-# List of systemd services that the immich/server systemd service depends on
-immich_machine_learning_systemd_required_services_list: "{{ immich_machine_learning_systemd_required_services_list_default + immich_machine_learning_systemd_required_services_list_auto + immich_machine_learning_systemd_required_services_list_custom }}"
-immich_machine_learning_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
-immich_machine_learning_systemd_required_services_list_auto: []
-immich_machine_learning_systemd_required_services_list_custom: []
-
-# List of systemd services that the immich/server systemd service wants
-immich_machine_learning_systemd_wanted_services_list: []
 
 # Controls the TZ environment variable for the server component
 immich_server_environment_variable_tz: Etc/UTC
@@ -250,27 +203,126 @@ immich_server_environment_variable_redis_dbindex: "{{ immich_redis_dbindex }}"
 # Additional environment variables for the server container
 immich_server_environment_variables_additional_variables: ''
 
+# Specifies the value of the `X-XSS-Protection` header
+# Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
+#
+# Learn more about it is here:
+# - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+# - https://portswigger.net/web-security/cross-site-scripting/reflected
+immich_server_http_header_xss_protection: "1; mode=block"
+
+# Specifies the value of the `X-Content-Type-Options` header.
+# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+immich_server_http_header_content_type_options: nosniff
+
+# Specifies the value of the `Content-Security-Policy` header.
+# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
+immich_server_http_header_content_security_policy: frame-ancestors 'self'
+
+# Specifies the value of the `Permission-Policy` header.
+# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permission-Policy
+immich_server_http_header_content_permission_policy: "{{ 'interest-cohort=()' if immich_server_floc_optout_enabled else '' }}"
+
+# Specifies the value of the `Strict-Transport-Security` header.
+# See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+immich_server_http_header_strict_transport_security: "max-age=31536000; includeSubDomains{{ '; preload' if immich_server_hsts_preload_enabled else '' }}"
+
+# Controls whether to immich a "Permissions-Policy interest-cohort=();" header along with all responses
+#
+# Learn more about what it is here:
+# - https://www.eff.org/deeplinks/2021/03/googles-floc-terrible-idea
+# - https://paramdeo.com/blog/opting-your-website-out-of-googles-floc-network
+# - https://amifloced.org/
+#
+# Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
+# See: `immich_content_permission_policy`
+immich_server_floc_optout_enabled: true
+
+# Controls if HSTS preloading is enabled
+#
+# In its strongest and recommended form, the [HSTS policy](https://www.chromium.org/hsts) includes all subdomains, and
+# indicates a willingness to be "preloaded" into browsers:
+# `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+# For more information visit:
+# - https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
+# - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+# - https://hstspreload.org/#opt-in
+# See: `immich_server_http_header_strict_transport_security`
+immich_server_hsts_preload_enabled: false
+
+########################################################################
+#                                                                      #
+# /server                                                              #
+#                                                                      #
+########################################################################
+
+
+########################################################################
+#                                                                      #
+# machine-learning                                                     #
+#                                                                      #
+########################################################################
+
+immich_machine_learning_identifier: "{{ immich_identifier }}-machine-learning"
+
+immich_machine_learning_base_path: "{{ immich_base_path }}/machine-learning"
+immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cache"
+
+immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
+
+# The HTTP port number used by the machine-learning component
+immich_machine_learning_container_http_port: 3003
+
+immich_machine_learning_container_image: "{{ immich_machine_learning_container_image_registry_prefix }}immich-app/immich-machine-learning:{{ immich_machine_learning_container_image_tag }}"
+immich_machine_learning_container_image_tag: "{{ immich_machine_learning_version }}"
+immich_machine_learning_container_image_registry_prefix: "{{ immich_machine_learning_container_image_registry_prefix_upstream }}"
+immich_machine_learning_container_image_registry_prefix_upstream: "{{ immich_machine_learning_container_image_registry_prefix_upstream_default }}"
+immich_machine_learning_container_image_registry_prefix_upstream_default: ghcr.io/
+immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_container_image.endswith(':latest') }}"
+
+# The base container network for the machine-learning service. It will be auto-created by this role if it doesn't exist already.
+immich_machine_learning_container_network: "{{ immich_server_container_network }}"
+
+# A list of additional container networks that the machine-learning container would be connected to.
+# The role does not create these networks, so make sure they already exist.
+# Use this to expose this container to another reverse proxy, which runs in a different container network.
+immich_machine_learning_container_additional_networks: "{{ immich_machine_learning_container_additional_networks_auto + immich_machine_learning_container_additional_networks_custom }}"
+immich_machine_learning_container_additional_networks_auto: []
+immich_machine_learning_container_additional_networks_custom: []
+
+# Controls whether the container exposes its HTTP port (tcp/3003 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:3003"), or empty string to not expose.
+# See immich_machine_learning_container_http_port
+immich_machine_learning_container_http_host_bind_port: ''
+
+# A list of additional "volumes" to mount in the container.
+# This list gets populated dynamically at runtime. You can provide a different default value,
+# if you wish to mount your own files into the container.
+# Contains definition objects like this: `{"type": "bind", "src": "/outside", "dst": "/inside", "options": "readonly"}.
+# See the `--mount` documentation for the `docker run` command.
+immich_machine_learning_container_additional_volumes: []
+
+# A list of extra arguments to pass to the container (`docker run` command)
+immich_machine_learning_container_extra_arguments: []
+
+# List of systemd services that the immich/server systemd service depends on
+immich_machine_learning_systemd_required_services_list: "{{ immich_machine_learning_systemd_required_services_list_default + immich_machine_learning_systemd_required_services_list_auto + immich_machine_learning_systemd_required_services_list_custom }}"
+immich_machine_learning_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
+immich_machine_learning_systemd_required_services_list_auto: []
+immich_machine_learning_systemd_required_services_list_custom: []
+
+# List of systemd services that the immich/server systemd service wants
+immich_machine_learning_systemd_wanted_services_list: []
+
 # Controls the IMMICH_PORT environment variable for the machine-learning component
 immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_container_http_port }}"
 
 # Additional environment variables for the machine-learning container
 immich_machine_learning_environment_variables_additional_variables: ''
 
-immich_database_hostname: ''
-immich_database_port: 5432
-immich_database_username: immich
-immich_database_password: ''
-immich_database_name: immich
-immich_database_sslmode: require
-
-immich_redis_url: ''
-immich_redis_socket: ''
-immich_redis_hostname: ''
-immich_redis_port: '6379'
-immich_redis_username: ''
-immich_redis_password: ''
-immich_redis_dbindex: '0'
-
-# immich_hardware_acceleration set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-# only empty or nvenc (nvidia cuda) is supportet at the moment
-immich_hardware_acceleration: ''
+########################################################################
+#                                                                      #
+# /machine-learning                                                    #
+#                                                                      #
+########################################################################
