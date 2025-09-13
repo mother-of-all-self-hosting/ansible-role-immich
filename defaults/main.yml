@@ -219,7 +219,7 @@ immich_server_environment_variable_immich_env: production
 immich_server_environment_variable_immich_log_level: log
 
 # Controls the DB_URL environment variable for the server component
-immich_server_environment_variables_db_url: |-
+immich_server_environment_variable_db_url: |-
   {{
     ('postgresql://' + immich_database_username + ':' + immich_database_password + '@' + immich_database_hostname + ':' + immich_database_port | string + '/' + immich_database_name + '?sslmode=' + immich_database_sslmode)
     if (immich_database_username and immich_database_hostname)
