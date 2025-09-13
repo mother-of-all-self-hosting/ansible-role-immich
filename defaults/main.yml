@@ -55,12 +55,13 @@ immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_
 # Controls whether the container exposes its HTTP port (tcp/80 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
+# See immich_server_container_http_port
 immich_server_container_http_host_bind_port: ''
 
 # The base container network for the server service. It will be auto-created by this role if it doesn't exist already.
 immich_server_container_network: "{{ immich_identifier }}"
 
-# The port number in the servr container
+# The port number in the server container
 immich_server_container_http_port: 2283
 
 # A list of additional container networks that the server container would be connected to.
@@ -194,11 +195,19 @@ immich_machine_learning_systemd_required_services_list_custom: []
 # List of systemd services that the immich/server systemd service wants
 immich_machine_learning_systemd_wanted_services_list: []
 
-# Additional environment variables for the server container
-immich_server_environment_variables_additional_variables: ''
+# Controls the TZ environment variable for the server component
+immich_server_environment_variable_tz: Etc/UTC
 
-# Additional environment variables for the machine-learning container
-immich_machine_learning_environment_variables_additional_variables: ''
+# Controls the IMMICH_PORT environment variable for the server component
+immich_server_environment_variable_immich_port: "{{ immich_server_container_http_port }}"
+
+# Controls the IMMICH_ENV environment variable for the server component
+# Known values: production, development
+immich_server_environment_variable_immich_env: production
+
+# Controls the IMMICH_LOG_LEVEL environment variable for the server component
+# Known values: verbose, debug, log, warn, error
+immich_server_environment_variable_immich_log_level: log
 
 # Controls the DB_URL environment variable for the server component
 immich_server_environment_variables_db_url: |-
@@ -207,6 +216,12 @@ immich_server_environment_variables_db_url: |-
     if (immich_database_username and immich_database_hostname)
     else ''
   }}
+
+# Additional environment variables for the server container
+immich_server_environment_variables_additional_variables: ''
+
+# Additional environment variables for the machine-learning container
+immich_machine_learning_environment_variables_additional_variables: ''
 
 immich_database_hostname: ''
 immich_database_port: 5432
@@ -222,8 +237,6 @@ immich_redis_port: '6379'
 immich_redis_username: ''
 immich_redis_password: ''
 immich_redis_dbindex: '0'
-
-immich_environment_variable_tz: Etc/UTC
 
 # immich_hardware_acceleration set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
 # only empty or nvenc (nvidia cuda) is supportet at the moment
