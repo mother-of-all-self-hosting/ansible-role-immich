@@ -75,7 +75,7 @@ immich_server_data_path: "{{ immich_server_base_path }}/data"
 
 immich_server_version: "{{ immich_version }}"
 
-# The HTTP port number used by the server component
+# The HTTP port used internally (in the container) by the server component
 immich_server_http_port: 2283
 
 immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
@@ -271,7 +271,7 @@ immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cac
 
 immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 
-# The HTTP port number used by the machine-learning component
+# The HTTP port used internally (in the container) by the machine-learning component
 immich_machine_learning_http_port: 3003
 
 immich_machine_learning_container_image: "{{ immich_machine_learning_container_image_registry_prefix }}immich-app/immich-machine-learning:{{ immich_machine_learning_container_image_tag }}"
