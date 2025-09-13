@@ -40,7 +40,7 @@ traefik.http.routers.{{ immich_server_identifier }}.tls={{ immich_server_contain
 traefik.http.routers.{{ immich_server_identifier }}.tls.certResolver={{ immich_server_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ immich_server_identifier }}.loadbalancer.server.port={{ immich_server_container_http_port }}
+traefik.http.services.{{ immich_server_identifier }}.loadbalancer.server.port={{ immich_server_http_port }}
 {% endif %}
 
 {{ immich_server_container_labels_additional_labels }}

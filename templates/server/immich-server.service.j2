@@ -28,7 +28,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --gpus all\
                 {% endif %}
                 {% if immich_server_container_http_host_bind_port %}
-                -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_container_http_port }} \
+                -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_http_port }} \
                 {% endif %}
                 --link {{ immich_machine_learning_identifier }}:immich-machine-learning \
                 --label-file={{ immich_server_base_path }}/labels \

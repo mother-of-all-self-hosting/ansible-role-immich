@@ -76,7 +76,7 @@ immich_server_data_path: "{{ immich_server_base_path }}/data"
 immich_server_version: "{{ immich_version }}"
 
 # The HTTP port number used by the server component
-immich_server_container_http_port: 2283
+immich_server_http_port: 2283
 
 immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
 immich_server_container_image_tag: "{{ immich_server_version }}"
@@ -98,7 +98,7 @@ immich_server_container_additional_networks_custom: []
 # Controls whether the container exposes its HTTP port (tcp/2283 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
-# See immich_server_container_http_port
+# See immich_server_http_port
 immich_server_container_http_host_bind_port: ''
 
 # A list of additional "volumes" to mount in the container.
@@ -162,7 +162,7 @@ immich_server_systemd_wanted_services_list: []
 immich_server_environment_variable_tz: Etc/UTC
 
 # Controls the IMMICH_PORT environment variable for the server component
-immich_server_environment_variable_immich_port: "{{ immich_server_container_http_port }}"
+immich_server_environment_variable_immich_port: "{{ immich_server_http_port }}"
 
 # Controls the IMMICH_ENV environment variable for the server component
 # Known values: production, development
