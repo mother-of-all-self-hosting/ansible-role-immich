@@ -226,6 +226,27 @@ immich_server_environment_variable_db_url: |-
     else ''
   }}
 
+# Controls the REDIS_URL environment variable for the server component
+immich_server_environment_variable_redis_url: "{{ immich_redis_url }}"
+
+# Controls the REDIS_SOCKET environment variable for the server component
+immich_server_environment_variable_redis_socket: "{{ immich_redis_socket }}"
+
+# Controls the REDIS_HOSTNAME environment variable for the server component
+immich_server_environment_variable_redis_hostname: "{{ immich_redis_hostname }}"
+
+# Controls the REDIS_PORT environment variable for the server component
+immich_server_environment_variable_redis_port: "{{ immich_redis_port }}"
+
+# Controls the REDIS_USERNAME environment variable for the server component
+immich_server_environment_variable_redis_username: "{{ immich_redis_username }}"
+
+# Controls the REDIS_PASSWORD environment variable for the server component
+immich_server_environment_variable_redis_password: "{{ immich_redis_password }}"
+
+# Controls the REDIS_DBINDEX environment variable for the server component
+immich_server_environment_variable_redis_dbindex: "{{ immich_redis_dbindex }}"
+
 # Additional environment variables for the server container
 immich_server_environment_variables_additional_variables: ''
 
