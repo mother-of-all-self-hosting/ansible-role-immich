@@ -1,18 +1,32 @@
 ---
 
 - name: Ensure Immich paths exist
+  when: item.when | bool
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
     mode: "0750"
     owner: "{{ immich_uid }}"
     group: "{{ immich_gid }}"
   with_items:
-    - "{{ immich_base_path }}"
-    - "{{ immich_server_base_path }}"
-    - "{{ immich_server_data_path }}"
-    - "{{ immich_machine_learning_base_path }}"
-    - "{{ immich_machine_learning_cache_path }}"
+    - path: "{{ immich_base_path }}"
+      when: true
+    - path: "{{ immich_server_base_path }}"
+      when: true
+    - path: "{{ immich_server_data_path }}"
+      when: true
+    - path: "{{ immich_machine_learning_base_path }}"
+      when: true
+    - path: "{{ immich_machine_learning_cache_path }}"
+      when: true
+    - path: "{{ immich_machine_learning_tmp_path }}"
+      when: "{{ not immich_machine_learning_container_tmp_tmpfs_enabled }}"
+
+- name: Ensure Immich tmp path removed if tmp-on-tmpfs enabled
+  when: immich_machine_learning_container_tmp_tmpfs_enabled | bool
+  ansible.builtin.file:
+    path: "{{ immich_machine_learning_tmp_path }}"
+    state: absent
 
 - name: Ensure Immich support files installed
   ansible.builtin.template:

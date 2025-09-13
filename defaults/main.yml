@@ -288,6 +288,8 @@ immich_machine_learning_identifier: "{{ immich_identifier }}-machine-learning"
 
 immich_machine_learning_base_path: "{{ immich_base_path }}/machine-learning"
 immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cache"
+# See `immich_machine_learning_container_tmp_tmpfs_enabled`
+immich_machine_learning_tmp_path: "{{ immich_machine_learning_base_path }}/tmp"
 
 immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 
@@ -300,6 +302,31 @@ immich_machine_learning_container_image_registry_prefix: "{{ immich_machine_lear
 immich_machine_learning_container_image_registry_prefix_upstream: "{{ immich_machine_learning_container_image_registry_prefix_upstream_default }}"
 immich_machine_learning_container_image_registry_prefix_upstream_default: ghcr.io/
 immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_container_image.endswith(':latest') }}"
+
+# Controls the user that the machine-learning container runs as. Set to `0` to run as root.
+immich_machine_learning_container_uid: "{{ immich_uid }}"
+
+# Controls the group that the machine-learning container runs as. Set to `0` to run as root.
+immich_machine_learning_container_gid: "{{ immich_gid }}"
+
+# Controls whether the machine-learning container drops all capabilities (`--cap-drop=ALL`).
+immich_machine_learning_container_cap_drop_all_enabled: true
+
+# Controls whether the machine-learning container adds some capabilities (`--cap-add`).
+# See: immich_machine_learning_container_cap_add_capabilities
+immich_machine_learning_container_cap_add_enabled: "{{ immich_machine_learning_container_cap_drop_all_enabled }}"
+immich_machine_learning_container_cap_add_capabilities: "{{ (immich_machine_learning_container_cap_add_capabilities_default + immich_machine_learning_container_cap_add_capabilities_auto + immich_machine_learning_container_cap_add_capabilities_custom) | unique }}"
+immich_machine_learning_container_cap_add_capabilities_default: ["CHOWN", "DAC_OVERRIDE"]
+immich_machine_learning_container_cap_add_capabilities_auto: []
+immich_machine_learning_container_cap_add_capabilities_custom: []
+
+# Controls whether the machine-learning container runs with a read-only filesystem (`--read-only`).
+immich_machine_learning_container_read_only_enabled: true
+
+# Controls whether /tmp should be a tmpfs.
+# If not enabled, /tmp will be persisted to disk (see `immich_machine_learning_tmp_path`).
+immich_machine_learning_container_tmp_tmpfs_enabled: "{{ immich_machine_learning_container_read_only_enabled }}"
+immich_machine_learning_container_tmp_tmpfs_size_mb: "{{ (ansible_memtotal_mb / 2) | round | int }}"
 
 # The base container network for the machine-learning service. It will be auto-created by this role if it doesn't exist already.
 immich_machine_learning_container_network: "{{ immich_server_container_network }}"
@@ -339,6 +366,14 @@ immich_machine_learning_systemd_wanted_services_list: []
 
 # Controls the IMMICH_PORT environment variable for the machine-learning component
 immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_http_port }}"
+
+# Controls the MPLCONFIGDIR environment variable for the machine-learning component.
+# This is used by Matplotlib to store its data.
+# By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
+# but this path may not exist or may not be writable depending on the container's user (e.g. `immich_machine_learning_container_uid`).
+# It's better to set this to a path that is guaranteed to exist and to be writable.
+# See `immich_machine_learning_tmp_path` and `immich_machine_learning_container_tmp_tmpfs_enabled`.
+immich_machine_learning_environment_variable_mplconfigdir: /tmp/matplotlib
 
 # Additional environment variables for the machine-learning container
 immich_machine_learning_environment_variables_additional_variables: ''
