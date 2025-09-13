@@ -1,13 +1,13 @@
 ---
 
-- name: Check existence of immich server systemd service
+- name: Check existence of Immich server systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
   register: immich_server_service_stat
 
 - when: immich_server_service_stat.stat.exists | bool
   block:
-    - name: Ensure immich systemd services are stopped
+    - name: Ensure Immich systemd services are stopped
       ansible.builtin.service:
         name: "{{ item }}"
         state: stopped
@@ -17,7 +17,7 @@
         - "{{ immich_server_identifier }}.service"
         - "{{ immich_machine_learning_identifier }}.service"
 
-    - name: Ensure immich systemd services do not exist
+    - name: Ensure Immich systemd services do not exist
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
@@ -25,7 +25,7 @@
         - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
         - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
 
-    - name: Ensure immich base directory doesn't exist
+    - name: Ensure Immich base directory doesn't exist
       ansible.builtin.file:
         path: "{{ immich_base_path }}"
         state: absent

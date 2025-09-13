@@ -1,6 +1,6 @@
 ---
 
-- name: Ensure immich paths exist
+- name: Ensure Immich paths exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -14,7 +14,7 @@
     - "{{ immich_machine_learning_base_path }}"
     - "{{ immich_machine_learning_cache_path }}"
 
-- name: Ensure immich support files installed
+- name: Ensure Immich support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/{{ item.src }}"
     dest: "{{ item.dst }}"
@@ -29,7 +29,7 @@
     - src: templates/machine-learning/env.j2
       dst: "{{ immich_machine_learning_base_path }}/env"
 
-- name: Ensure immich container image is pulled via community.docker.docker_image
+- name: Ensure Immich container image is pulled via community.docker.docker_image
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
   community.docker.docker_image:
     name: "{{ immich_server_container_image }}"
@@ -41,7 +41,7 @@
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: image_pull_result is not failed
 
-- name: Ensure immich machine learning container image is pulled via community.docker.docker_image
+- name: Ensure Immich machine learning container image is pulled via community.docker.docker_image
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
   community.docker.docker_image:
     name: "{{ immich_machine_learning_container_image }}"
@@ -53,7 +53,7 @@
   delay: "{{ devture_playbook_help_container_retries_delay }}"
   until: image_pull_result is not failed
 
-- name: Ensure immich container image is pulled via command
+- name: Ensure Immich container image is pulled via command
   when: devture_systemd_docker_base_container_image_pull_method == 'command'
   ansible.builtin.command:
     cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ immich_server_container_image }}"
@@ -65,9 +65,8 @@
   with_items:
     - {image: "{{ immich_server_container_image }}"}
     - {image: "{{ immich_machine_learning_container_image }}"}
-    - {image: "{{ immich_database_container_image }}"}
 
-- name: Ensure immich container network is created via community.docker.docker_network
+- name: Ensure Immich container networks are created via community.docker.docker_network
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
   community.general.docker_network:
     enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
@@ -76,7 +75,7 @@
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
   with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
 
-- name: Ensure immich container network is created via ansible.builtin.command
+- name: Ensure Immich container networks are created via ansible.builtin.command
   when: devture_systemd_docker_base_container_network_creation_method == 'command'
   ansible.builtin.command:
     cmd: >-
@@ -89,7 +88,7 @@
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
   with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
 
-- name: Ensure immich systemd services are present
+- name: Ensure Immich systemd services are present
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
