@@ -31,7 +31,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --cap-add=DAC_OVERRIDE \
                 --network={{ immich_machine_learning_container_network }} \
                 {% if immich_machine_learning_container_http_host_bind_port %}
-                -p {{ immich_machine_learning_container_http_host_bind_port }}:{{ immich_machine_learning_container_http_port }} \
+                -p {{ immich_machine_learning_container_http_host_bind_port }}:{{ immich_machine_learning_http_port }} \
                 {% endif %}
                 --mount type=bind,src={{ immich_machine_learning_cache_path }},dst=/cache \
                 --env-file={{ immich_machine_learning_base_path }}/env \
