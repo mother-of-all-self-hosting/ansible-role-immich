@@ -85,6 +85,18 @@ immich_server_container_image_registry_prefix_upstream: "{{ immich_server_contai
 immich_server_container_image_registry_prefix_upstream_default: ghcr.io/
 immich_server_container_image_force_pull: "{{ immich_server_container_image.endswith(':latest') }}"
 
+# Controls the user that the server container runs as. Set to `0` to run as root.
+immich_server_container_uid: "{{ immich_uid }}"
+
+# Controls the group that the server container runs as. Set to `0` to run as root.
+immich_server_container_gid: "{{ immich_gid }}"
+
+# Controls whether the server container drops all capabilities (`--cap-drop=ALL`).
+immich_server_container_cap_drop_all_enabled: true
+
+# Controls whether the server container runs with a read-only filesystem (`--read-only`).
+immich_server_container_read_only_enabled: true
+
 # The base container network for the server service. It will be auto-created by this role if it doesn't exist already.
 immich_server_container_network: "{{ immich_identifier }}"
 

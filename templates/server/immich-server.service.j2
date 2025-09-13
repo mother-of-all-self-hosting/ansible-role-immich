@@ -24,6 +24,13 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --rm \
                 --name={{ immich_server_identifier }} \
                 --log-driver=none \
+                --user={{ immich_server_container_uid }}:{{ immich_server_container_gid }} \
+                {% if immich_server_container_cap_drop_all_enabled %}
+                --cap-drop=ALL \
+                {% endif %}
+                {% if immich_server_container_read_only_enabled %}
+                --read-only \
+                {% endif %}
                 {% if immich_hardware_acceleration == 'cuda' %}
                 --gpus all\
                 {% endif %}
