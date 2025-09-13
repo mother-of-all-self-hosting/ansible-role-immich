@@ -11,8 +11,7 @@ immich_enabled: true
 
 immich_identifier: immich
 
-immich_base_path: "{{ immich_identifier }}"
-immich_upload_path: "{{ immich_base_path }}/upload"
+immich_base_path: "/{{ immich_identifier }}"
 
 immich_version: v1.142.0
 
@@ -71,6 +70,8 @@ immich_hardware_acceleration: ''
 immich_server_identifier: "{{ immich_identifier }}-server"
 
 immich_server_base_path: "{{ immich_base_path }}/server"
+
+immich_server_data_path: "{{ immich_server_base_path }}/data"
 
 immich_server_version: "{{ immich_version }}"
 

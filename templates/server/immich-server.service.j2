@@ -33,7 +33,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --link {{ immich_machine_learning_identifier }}:immich-machine-learning \
                 --label-file={{ immich_server_base_path }}/labels \
                 --network={{ immich_server_container_network }} \
-                --mount type=bind,src={{ immich_upload_path }},dst=/data \
+                --mount type=bind,src={{ immich_server_data_path }},dst=/data \
                 --env-file={{ immich_server_base_path }}/env \
                 {% if immich_server_container_extra_arguments | length > 0 %}
                 {{ immich_server_container_extra_arguments | join(' ') }} \

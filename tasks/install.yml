@@ -10,8 +10,8 @@
   with_items:
     - "{{ immich_base_path }}"
     - "{{ immich_server_base_path }}"
+    - "{{ immich_server_data_path }}"
     - "{{ immich_machine_learning_base_path }}"
-    - "{{ immich_upload_path }}"
     - "{{ immich_machine_learning_cache_path }}"
 
 - name: Ensure immich support files installed
@@ -89,7 +89,7 @@
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
   with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
 
-- name: Ensure immich systemd services ares present
+- name: Ensure immich systemd services are present
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
