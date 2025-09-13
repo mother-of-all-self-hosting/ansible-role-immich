@@ -27,17 +27,17 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 {% if immich_hardware_acceleration == 'cuda' %}
                 --gpus all\
                 {% endif %}
+                --network={{ immich_server_container_network }} \
                 {% if immich_server_container_http_host_bind_port %}
                 -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_http_port }} \
                 {% endif %}
                 --link {{ immich_machine_learning_identifier }}:immich-machine-learning \
+                --env-file={{ immich_server_base_path }}/env \
                 --label-file={{ immich_server_base_path }}/labels \
-                --network={{ immich_server_container_network }} \
                 --mount type=bind,src={{ immich_server_data_path }},dst=/data \
                 {% for volume in immich_server_container_additional_volumes %}
                 --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options else '' }} \
                 {% endfor %}
-                --env-file={{ immich_server_base_path }}/env \
                 {% if immich_server_container_extra_arguments | length > 0 %}
                 {{ immich_server_container_extra_arguments | join(' ') }} \
                 {% endif %}
