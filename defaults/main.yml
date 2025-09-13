@@ -14,7 +14,7 @@ immich_machine_learning_base_path: "{{ immich_base_path }}/machine-learning"
 immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cache"
 immich_upload_path: "{{ immich_base_path }}/upload"
 
-immich_version: v1.141.1
+immich_version: v1.142.0
 
 immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
 
