@@ -103,7 +103,15 @@ immich_server_container_network: "{{ immich_identifier }}"
 # A list of additional container networks that the server container would be connected to.
 # The role does not create these networks, so make sure they already exist.
 # Use this to expose this container to another reverse proxy, which runs in a different container network.
-immich_server_container_additional_networks: "{{ immich_server_container_additional_networks_auto + immich_server_container_additional_networks_custom }}"
+immich_server_container_additional_networks: "{{ (immich_server_container_additional_networks_default + immich_server_container_additional_networks_auto + immich_server_container_additional_networks_custom) | unique }}"
+immich_server_container_additional_networks_default: |-
+  {{
+    (
+      [immich_machine_learning_container_network]
+      if immich_machine_learning_container_network != immich_server_container_network
+      else []
+    )
+  }}
 immich_server_container_additional_networks_auto: []
 immich_server_container_additional_networks_custom: []
 
@@ -299,7 +307,8 @@ immich_machine_learning_container_network: "{{ immich_server_container_network }
 # A list of additional container networks that the machine-learning container would be connected to.
 # The role does not create these networks, so make sure they already exist.
 # Use this to expose this container to another reverse proxy, which runs in a different container network.
-immich_machine_learning_container_additional_networks: "{{ immich_machine_learning_container_additional_networks_auto + immich_machine_learning_container_additional_networks_custom }}"
+immich_machine_learning_container_additional_networks: "{{ (immich_machine_learning_container_additional_networks_default + immich_machine_learning_container_additional_networks_auto + immich_machine_learning_container_additional_networks_custom) | unique }}"
+immich_machine_learning_container_additional_networks_default: []
 immich_machine_learning_container_additional_networks_auto: []
 immich_machine_learning_container_additional_networks_custom: []
 
