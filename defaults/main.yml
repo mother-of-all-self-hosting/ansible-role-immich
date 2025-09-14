@@ -831,6 +831,10 @@ immich_machine_learning_systemd_wanted_services_list: []
 # Controls the IMMICH_PORT environment variable for the machine-learning component
 immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_http_port }}"
 
+# Controls the IMMICH_LOG_LEVEL environment variable for the machine-learning component
+# Known values: verbose, debug, info, warn, error
+immich_machine_learning_environment_variable_immich_log_level: info
+
 # Controls the MPLCONFIGDIR environment variable for the machine-learning component.
 # This is used by Matplotlib to store its data.
 # By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
