@@ -849,6 +849,97 @@ immich_machine_learning_environment_variable_machine_learning_ann: "{{ immich_ma
 # Known values: false, true
 immich_machine_learning_environment_variable_machine_learning_rknn: "{{ immich_machine_learning_hardware_acceleration == 'rknn' }}"
 
+# Controls the MACHINE_LEARNING_MODEL_TTL environment variable for the machine-learning component
+# Inactivity time (s) before a model is unloaded (disabled if <= 0)
+immich_machine_learning_environment_variable_machine_learning_model_ttl: 300
+
+# Controls the MACHINE_LEARNING_MODEL_TTL_POLL_S environment variable for the machine-learning component
+# Interval (s) between checks for the model TTL (disabled if <= 0)
+immich_machine_learning_environment_variable_machine_learning_model_ttl_poll_s: 10
+
+# Controls the MACHINE_LEARNING_CACHE_FOLDER environment variable for the machine-learning component
+# Directory where models are downloaded
+immich_machine_learning_environment_variable_machine_learning_cache_folder: /cache
+
+# Controls the MACHINE_LEARNING_REQUEST_THREADS environment variable for the machine-learning component
+# Thread count of the request thread pool (disabled if <= 0)
+# Default: number of CPU cores
+immich_machine_learning_environment_variable_machine_learning_request_threads: ''
+
+# Controls the MACHINE_LEARNING_MODEL_INTER_OP_THREADS environment variable for the machine-learning component
+# Number of parallel model operations
+immich_machine_learning_environment_variable_machine_learning_model_inter_op_threads: 1
+
+# Controls the MACHINE_LEARNING_MODEL_INTRA_OP_THREADS environment variable for the machine-learning component
+# Number of threads for each model operation
+immich_machine_learning_environment_variable_machine_learning_model_intra_op_threads: 2
+
+# Controls the MACHINE_LEARNING_WORKERS environment variable for the machine-learning component
+# Number of worker processes to spawn
+immich_machine_learning_environment_variable_machine_learning_workers: 1
+
+# Controls the MACHINE_LEARNING_HTTP_KEEPALIVE_TIMEOUT_S environment variable for the machine-learning component
+# HTTP Keep-alive time in seconds
+immich_machine_learning_environment_variable_machine_learning_http_keepalive_timeout_s: 2
+
+# Controls the MACHINE_LEARNING_WORKER_TIMEOUT environment variable for the machine-learning component
+# Maximum time (s) of unresponsiveness before a worker is killed
+# Default: 120 (300 if using OpenVINO)
+immich_machine_learning_environment_variable_machine_learning_worker_timeout: |-
+  {{
+    300 if immich_machine_learning_hardware_acceleration == 'openvino' or immich_machine_learning_hardware_acceleration == 'openvino-wsl'
+    else 120
+  }}
+
+# Controls the MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL environment variable for the machine-learning component
+# Comma-separated list of (textual) CLIP model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__clip__textual: ''
+
+# Controls the MACHINE_LEARNING_PRELOAD__CLIP__VISUAL environment variable for the machine-learning component
+# Comma-separated list of (visual) CLIP model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__clip__visual: ''
+
+# Controls the MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION environment variable for the machine-learning component
+# Comma-separated list of (recognition) facial recognition model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__recognition: ''
+
+# Controls the MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION environment variable for the machine-learning component
+# Comma-separated list of (detection) facial recognition model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__detection: ''
+
+# Controls the MACHINE_LEARNING_ANN_FP16_TURBO environment variable for the machine-learning component
+# Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN)
+immich_machine_learning_environment_variable_machine_learning_ann_fp16_turbo: false
+
+# Controls the MACHINE_LEARNING_ANN_TUNING_LEVEL environment variable for the machine-learning component
+# ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)
+immich_machine_learning_environment_variable_machine_learning_ann_tuning_level: 2
+
+# Controls the MACHINE_LEARNING_DEVICE_IDS environment variable for the machine-learning component
+# Device IDs to use in multi-GPU environments
+immich_machine_learning_environment_variable_machine_learning_device_ids: '0'
+
+# Controls the MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION environment variable for the machine-learning component
+# Set the maximum number of faces that will be processed at once by the facial recognition model
+# Default: None (1 if using OpenVINO)
+immich_machine_learning_environment_variable_machine_learning_max_batch_size__facial_recognition: |-
+  {{
+    '1' if immich_machine_learning_hardware_acceleration in ['openvino', 'openvino-wsl']
+    else ''
+  }}
+
+# Controls the MACHINE_LEARNING_PING_TIMEOUT environment variable for the machine-learning component
+# How long (ms) to wait for a PING response when checking if an ML server is available
+immich_machine_learning_environment_variable_machine_learning_ping_timeout: 2000
+
+# Controls the MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME environment variable for the machine-learning component
+# How long to ignore ML servers that are offline before trying again
+immich_machine_learning_environment_variable_machine_learning_availability_backoff_time: 30000
+
+# Controls the MACHINE_LEARNING_RKNN_THREADS environment variable for the machine-learning component
+# How many threads of RKNN runtime should be spinned up while inferencing
+immich_machine_learning_environment_variable_machine_learning_rknn_threads: 1
+
 # Controls the MPLCONFIGDIR environment variable for the machine-learning component.
 # This is used by Matplotlib to store its data.
 # By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
