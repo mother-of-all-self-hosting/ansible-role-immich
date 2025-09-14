@@ -12,25 +12,31 @@
     - path: "{{ immich_base_path }}"
       when: true
     - path: "{{ immich_server_base_path }}"
-      when: true
+      when: "{{ immich_server_enabled }}"
     - path: "{{ immich_server_data_path }}"
-      when: true
+      when: "{{ immich_server_enabled }}"
     - path: "{{ immich_machine_learning_base_path }}"
-      when: true
+      when: "{{ immich_machine_learning_enabled }}"
     - path: "{{ immich_machine_learning_cache_path }}"
-      when: true
+      when: "{{ immich_machine_learning_enabled }}"
     - path: "{{ immich_machine_learning_dot_cache_path }}"
-      when: true
+      when: "{{ immich_machine_learning_enabled }}"
     - path: "{{ immich_machine_learning_tmp_path }}"
-      when: "{{ not immich_machine_learning_container_tmp_tmpfs_enabled }}"
+      when: "{{ immich_machine_learning_enabled and not immich_machine_learning_container_tmp_tmpfs_enabled }}"
 
 - name: Ensure Immich tmp path removed if tmp-on-tmpfs enabled
-  when: immich_machine_learning_container_tmp_tmpfs_enabled | bool
+  when: immich_machine_learning_enabled and immich_machine_learning_container_tmp_tmpfs_enabled
   ansible.builtin.file:
     path: "{{ immich_machine_learning_tmp_path }}"
     state: absent
 
+# We intentionally don't clean up:
+# - `immich_server_base_path` if `not immich_server_enabled`
+# - `immich_machine_learning_base_path` if `not immich_machine_learning_enabled`
+# because we rely on uninstall.yml tasks to do it more cleanly.
+
 - name: Ensure Immich support files installed
+  when: item.when | bool
   ansible.builtin.template:
     src: "{{ role_path }}/{{ item.src }}"
     dest: "{{ item.dst }}"
@@ -40,13 +46,16 @@
   with_items:
     - src: templates/server/env.j2
       dst: "{{ immich_server_base_path }}/env"
+      when: "{{ immich_server_enabled }}"
     - src: templates/server/labels.j2
       dst: "{{ immich_server_base_path }}/labels"
+      when: "{{ immich_server_enabled }}"
     - src: templates/machine-learning/env.j2
       dst: "{{ immich_machine_learning_base_path }}/env"
+      when: "{{ immich_machine_learning_enabled }}"
 
 - name: Ensure Immich container images are pulled via community.docker.docker_image
-  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
+  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module' and item.when
   community.docker.docker_image:
     name: "{{ item.image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
@@ -59,11 +68,13 @@
   with_items:
     - image: "{{ immich_server_container_image }}"
       force_pull: "{{ immich_server_container_image_force_pull }}"
+      when: "{{ immich_server_enabled }}"
     - image: "{{ immich_machine_learning_container_image }}"
       force_pull: "{{ immich_machine_learning_container_image_force_pull }}"
+      when: "{{ immich_machine_learning_enabled }}"
 
 - name: Ensure Immich container images are pulled via command
-  when: devture_systemd_docker_base_container_image_pull_method == 'command'
+  when: devture_systemd_docker_base_container_image_pull_method == 'command' and item.when
   ansible.builtin.command:
     cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ item.image }}"
   register: image_pull_result
@@ -73,7 +84,9 @@
   changed_when: "'Downloaded newer image' in image_pull_result.stdout"
   with_items:
     - image: "{{ immich_server_container_image }}"
+      when: "{{ immich_server_enabled }}"
     - image: "{{ immich_machine_learning_container_image }}"
+      when: "{{ immich_machine_learning_enabled }}"
 
 - name: Ensure Immich container networks are created via community.docker.docker_network
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
@@ -82,7 +95,7 @@
     name: "{{ item }}"
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
-  with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
+  with_items: "{{ immich_container_networks }}"
 
 - name: Ensure Immich container networks are created via ansible.builtin.command
   when: devture_systemd_docker_base_container_network_creation_method == 'command'
@@ -95,9 +108,10 @@
   register: network_creation_result
   changed_when: network_creation_result.rc == 0
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
-  with_items: "{{ [immich_server_container_network, immich_machine_learning_container_network] | unique }}"
+  with_items: "{{ immich_container_networks }}"
 
 - name: Ensure Immich systemd services are present
+  when: item.when
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -105,5 +119,7 @@
   with_items:
     - src: "{{ role_path }}/templates/server/immich-server.service.j2"
       dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
+      when: "{{ immich_server_enabled }}"
     - src: "{{ role_path }}/templates/machine-learning/immich-machine-learning.service.j2"
       dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
+      when: "{{ immich_machine_learning_enabled }}"

@@ -3,44 +3,54 @@
 - name: Fail if required Immich settings not defined
   ansible.builtin.fail:
     msg: >
-      You need to define a required configuration setting (`{{ item }}`).
-  when: "lookup('vars', item, default='') | string | length == 0"
+      You need to define a required configuration setting (`{{ item.name }}`).
+  when: "item.when and lookup('vars', item.name, default='') | string | length == 0"
   with_items:
-    - immich_uid
-    - immich_gid
-    - immich_hostname
-    - immich_path_prefix
-    - immich_server_container_network
-    - immich_machine_learning_container_network
+    - name: immich_uid
+      when: true
+    - name: immich_gid
+      when: true
+    - name: immich_hostname
+      when: "{{ immich_server_enabled }}"
+    - name: immich_path_prefix
+      when: "{{ immich_server_enabled }}"
+    - name: immich_server_container_network
+      when: "{{ immich_server_enabled }}"
+    - name: immich_machine_learning_container_network
+      when: "{{ immich_machine_learning_enabled }}"
 
-- name: Fail if immich_server_transcoding_hardware_acceleration is invalid
-  ansible.builtin.fail:
-    msg: >-
-      immich_server_transcoding_hardware_acceleration (`{{ immich_server_transcoding_hardware_acceleration }}`) must be one of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl.
-  when: immich_server_transcoding_hardware_acceleration not in ['cpu', 'nvenc', 'quicksync', 'rkmpp', 'vaapi', 'vaapi-wsl']
-
-- name: Fail if immich_machine_learning_hardware_acceleration is invalid
-  ansible.builtin.fail:
-    msg: >-
-      immich_machine_learning_hardware_acceleration (`{{ immich_machine_learning_hardware_acceleration }}`) must be one of: armnn, cuda, cpu, openvino, openvino-wsl, rknn, rocm.
-  when: immich_machine_learning_hardware_acceleration not in ['armnn', 'cuda', 'cpu', 'openvino', 'openvino-wsl', 'rknn', 'rocm']
-
-- when: immich_server_container_labels_traefik_enabled | bool
+- when: immich_server_enabled | bool
   block:
-    - name: Fail if required Immich Traefik settings not defined
+    - name: Fail if immich_server_transcoding_hardware_acceleration is invalid
       ansible.builtin.fail:
         msg: >-
-          You need to define a required configuration setting (`{{ item }}`).
-      when: "lookup('vars', item, default='') | string | length == 0"
-      with_items:
-        - immich_server_container_labels_traefik_hostname
-        - immich_server_container_labels_traefik_path_prefix
+          immich_server_transcoding_hardware_acceleration (`{{ immich_server_transcoding_hardware_acceleration }}`) must be one of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl.
+      when: immich_server_transcoding_hardware_acceleration not in ['cpu', 'nvenc', 'quicksync', 'rkmpp', 'vaapi', 'vaapi-wsl']
 
-    # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
-    # Knowing that `immich_server_container_labels_traefik_path_prefix` does not end with a slash
-    # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
-    - name: Fail if immich_server_container_labels_traefik_path_prefix ends with a slash
+    - when: immich_server_container_labels_traefik_enabled | bool
+      block:
+        - name: Fail if required Immich Traefik settings not defined
+          ansible.builtin.fail:
+            msg: >-
+              You need to define a required configuration setting (`{{ item }}`).
+          when: "lookup('vars', item, default='') | string | length == 0"
+          with_items:
+            - immich_server_container_labels_traefik_hostname
+            - immich_server_container_labels_traefik_path_prefix
+
+        # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
+        # Knowing that `immich_server_container_labels_traefik_path_prefix` does not end with a slash
+        # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
+        - name: Fail if immich_server_container_labels_traefik_path_prefix ends with a slash
+          ansible.builtin.fail:
+            msg: >-
+              immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/immich`).
+          when: "immich_server_container_labels_traefik_path_prefix != '/' and immich_server_container_labels_traefik_path_prefix[-1] == '/'"
+
+- when: immich_machine_learning_enabled | bool
+  block:
+    - name: Fail if immich_machine_learning_hardware_acceleration is invalid
       ansible.builtin.fail:
         msg: >-
-          immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/immich`).
-      when: "immich_server_container_labels_traefik_path_prefix != '/' and immich_server_container_labels_traefik_path_prefix[-1] == '/'"
+          immich_machine_learning_hardware_acceleration (`{{ immich_machine_learning_hardware_acceleration }}`) must be one of: armnn, cuda, cpu, openvino, openvino-wsl, rknn, rocm.
+      when: immich_machine_learning_hardware_acceleration not in ['armnn', 'cuda', 'cpu', 'openvino', 'openvino-wsl', 'rknn', 'rocm']

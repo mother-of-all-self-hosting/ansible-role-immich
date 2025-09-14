@@ -68,6 +68,8 @@ immich_smtp_host: ''
 #                                                                      #
 ########################################################################
 
+immich_server_enabled: true
+
 immich_server_identifier: "{{ immich_identifier }}-server"
 
 immich_server_base_path: "{{ immich_base_path }}/server"
@@ -132,6 +134,17 @@ immich_server_container_additional_networks_default: |-
   }}
 immich_server_container_additional_networks_auto: []
 immich_server_container_additional_networks_custom: []
+
+# A list of additional "links" to attach to the container.
+# Contains definition objects like this: `"other-container-name:alias-inside-the-container"`.
+# See the `--link` documentation for the `docker run` command.
+immich_server_container_links: "{{ immich_server_container_links_default + immich_server_container_links_auto + immich_server_container_links_custom }}"
+immich_server_container_links_default: |-
+  {{
+    [immich_machine_learning_identifier + ":immich-machine-learning"] if immich_machine_learning_enabled | bool else []
+  }}
+immich_server_container_links_auto: []
+immich_server_container_links_custom: []
 
 # Controls whether the container exposes its HTTP port (tcp/2283 in the container).
 #
@@ -543,7 +556,7 @@ immich_server_systemd_wanted_services_list: "{{ (immich_server_systemd_wanted_se
 immich_server_systemd_wanted_services_list_default: |-
   {{
     (
-      [immich_machine_learning_identifier + '.service']
+      [immich_machine_learning_identifier + '.service'] if immich_machine_learning_enabled else []
     )
   }}
 immich_server_systemd_wanted_services_list_auto: []
@@ -663,6 +676,8 @@ immich_server_hsts_preload_enabled: false
 # machine-learning                                                     #
 #                                                                      #
 ########################################################################
+
+immich_machine_learning_enabled: true
 
 immich_machine_learning_identifier: "{{ immich_identifier }}-machine-learning"
 

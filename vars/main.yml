@@ -1,0 +1,8 @@
+immich_container_networks: |-
+  {{
+    (
+      [immich_server_container_network] if immich_server_enabled else []
+      +
+      [immich_machine_learning_container_network] if immich_machine_learning_enabled else []
+    ) | unique
+  }}

@@ -14,7 +14,9 @@
     - install-immich
 
 - block:
-    - when: not immich_enabled | bool
+    # If the whole role is disabled or any of its subcomponents are disabled, run the uninstall tasks.
+    # They will check what needs to be uninstalled.
+    - when: not (immich_enabled and immich_machine_learning_enabled and immich_server_enabled)
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
     - setup-all

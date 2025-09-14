@@ -1,31 +1,59 @@
 ---
 
-- name: Check existence of Immich server systemd service
-  ansible.builtin.stat:
-    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
-  register: immich_server_service_stat
-
-- when: immich_server_service_stat.stat.exists | bool
+- when: not immich_server_enabled | bool or not immich_enabled | bool
   block:
-    - name: Ensure Immich systemd services are stopped
-      ansible.builtin.service:
-        name: "{{ item }}"
-        state: stopped
-        enabled: false
-        daemon_reload: true
-      with_items:
-        - "{{ immich_server_identifier }}.service"
-        - "{{ immich_machine_learning_identifier }}.service"
+    - name: Check existence of Immich server systemd service
+      ansible.builtin.stat:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
+      register: immich_server_service_stat
 
-    - name: Ensure Immich systemd services do not exist
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      with_items:
-        - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
-        - "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
+    - when: immich_server_service_stat.stat.exists | bool
+      block:
+        - name: Ensure Immich server systemd services are stopped
+          ansible.builtin.service:
+            name: "{{ immich_server_identifier }}.service"
+            state: stopped
+            enabled: false
+            daemon_reload: true
 
-    - name: Ensure Immich base directory doesn't exist
-      ansible.builtin.file:
-        path: "{{ immich_base_path }}"
-        state: absent
+        - name: Ensure Immich server systemd service does not exist
+          ansible.builtin.file:
+            path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
+            state: absent
+
+        - name: Ensure Immich server base directory doesn't exist
+          ansible.builtin.file:
+            path: "{{ immich_server_base_path }}"
+            state: absent
+
+- when: not immich_machine_learning_enabled | bool or not immich_enabled | bool
+  block:
+    - name: Check existence of Immich machine-learning systemd service
+      ansible.builtin.stat:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
+      register: immich_machine_learning_service_stat
+
+    - when: immich_machine_learning_service_stat.stat.exists | bool
+      block:
+        - name: Ensure Immich machine-learning systemd service is stopped
+          ansible.builtin.service:
+            name: "{{ immich_machine_learning_identifier }}.service"
+            state: stopped
+            enabled: false
+            daemon_reload: true
+
+        - name: Ensure Immich machine-learning systemd service does not exist
+          ansible.builtin.file:
+            path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
+            state: absent
+
+        - name: Ensure Immich machine-learning base directory doesn't exist
+          ansible.builtin.file:
+            path: "{{ immich_machine_learning_base_path }}"
+            state: absent
+
+- name: Ensure Immich base directory doesn't exist
+  when: not immich_enabled | bool
+  ansible.builtin.file:
+    path: "{{ immich_base_path }}"
+    state: absent
