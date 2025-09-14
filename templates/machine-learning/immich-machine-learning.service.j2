@@ -57,7 +57,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --device={{ device.src }}:{{ device.dst }}{{ (':' + device.options) if device.options else '' }} \
                 {% endfor %}
                 {% for device_cgroup_rule in immich_machine_learning_container_device_cgroup_rules %}
-                --device-cgroup-rule={{ device_cgroup_rule }} \
+                --device-cgroup-rule="{{ device_cgroup_rule }}" \
                 {% endfor %}
                 {% for gpu in immich_machine_learning_container_gpus %}
                 --gpus={{ gpu }} \
