@@ -448,7 +448,7 @@ immich_machine_learning_container_additional_volumes_default_openvino: |
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
-          'options': 'rw'
+          'options': ''
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled
@@ -467,7 +467,7 @@ immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
-          'options': 'rw'
+          'options': ''
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled
@@ -480,7 +480,7 @@ immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
-          'options': 'rw'
+          'options': ''
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_enabled
