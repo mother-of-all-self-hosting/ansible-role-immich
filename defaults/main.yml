@@ -838,6 +838,14 @@ immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_lea
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/machine-learning/immich_ml/config.py#L93-L102
 immich_machine_learning_environment_variable_immich_log_level: info
 
+# Controls the MACHINE_LEARNING_ANN environment variable for the machine-learning component
+# Known values: false, true
+immich_machine_learning_environment_variable_machine_learning_ann: "{{ immich_machine_learning_hardware_acceleration == 'armnn' }}"
+
+# Controls the MACHINE_LEARNING_RKNN environment variable for the machine-learning component
+# Known values: false, true
+immich_machine_learning_environment_variable_machine_learning_rknn: "{{ immich_machine_learning_hardware_acceleration == 'rknn' }}"
+
 # Controls the MPLCONFIGDIR environment variable for the machine-learning component.
 # This is used by Matplotlib to store its data.
 # By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
