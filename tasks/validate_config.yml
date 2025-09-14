@@ -13,6 +13,12 @@
     - immich_server_container_network
     - immich_machine_learning_container_network
 
+- name: Fail if immich_machine_learning_hardware_acceleration is invalid
+  ansible.builtin.fail:
+    msg: >-
+      immich_machine_learning_hardware_acceleration (`{{ immich_machine_learning_hardware_acceleration }}`) must be one of: armnn, cuda, cpu, openvino, openvino-wsl, rknn, rocm.
+  when: immich_machine_learning_hardware_acceleration not in ['armnn', 'cuda', 'cpu', 'openvino', 'openvino-wsl', 'rknn', 'rocm']
+
 - when: immich_server_container_labels_traefik_enabled | bool
   block:
     - name: Fail if required Immich Traefik settings not defined

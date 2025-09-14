@@ -50,10 +50,6 @@ immich_redis_username: ''
 immich_redis_password: ''
 immich_redis_dbindex: '0'
 
-# immich_hardware_acceleration set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-# only empty or nvenc (nvidia cuda) is supported at the moment
-immich_hardware_acceleration: ''
-
 ########################################################################
 #                                                                      #
 # /common                                                              #
@@ -299,10 +295,34 @@ immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cac
 # See `immich_machine_learning_container_tmp_tmpfs_enabled`
 immich_machine_learning_tmp_path: "{{ immich_machine_learning_base_path }}/tmp"
 
-immich_machine_learning_version: "{{ immich_version }}{% if immich_hardware_acceleration %}-{{ immich_hardware_acceleration }}{% endif %}"
+immich_machine_learning_version: "{{ immich_version }}{{ immich_machine_learning_version_hardware_acceleration_suffix }}"
+
+# For hardware acceleration, one needs to add one of: `-armnn`, `-cuda`, `-rocm`, `-openvino`, `-rknn` to the image tag.
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/docker-compose.yml#L36-L38
+immich_machine_learning_version_hardware_acceleration_suffix: |-
+  {{
+    {
+      'armnn': '-armnn',
+      'cuda': '-cuda',
+      'cpu': '',
+      'openvino': '-openvino',
+      'openvino-wsl': '-openvino',
+      'rknn': '-rknn',
+      'rocm': '-rocm',
+    }[immich_machine_learning_hardware_acceleration]
+  }}
 
 # The HTTP port used internally (in the container) by the machine-learning component
 immich_machine_learning_http_port: 3003
+
+# Controls how to configure the machine-learning container for hardware acceleration.
+#
+# One of: armnn, cuda, cpu, openvino, openvino-wsl, rknn, rocm
+# Ref:
+# - https://docs.immich.app/installation/hardware-acceleration
+# - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml
+# - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/docker-compose.yml
+immich_machine_learning_hardware_acceleration: cpu
 
 immich_machine_learning_container_image: "{{ immich_machine_learning_container_image_registry_prefix }}immich-app/immich-machine-learning:{{ immich_machine_learning_container_image_tag }}"
 immich_machine_learning_container_image_tag: "{{ immich_machine_learning_version }}"
@@ -358,7 +378,443 @@ immich_machine_learning_container_http_host_bind_port: ''
 # if you wish to mount your own files into the container.
 # Contains definition objects like this: `{"type": "bind", "src": "/outside", "dst": "/inside", "options": "readonly"}.
 # See the `--mount` documentation for the `docker run` command.
-immich_machine_learning_container_additional_volumes: []
+immich_machine_learning_container_additional_volumes: "{{ immich_machine_learning_container_additional_volumes_default + immich_machine_learning_container_additional_volumes_auto + immich_machine_learning_container_additional_volumes_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_additional_volumes_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_additional_volumes_default_armn,
+      'cuda': immich_machine_learning_container_additional_volumes_default_cuda,
+      'cpu': immich_machine_learning_container_additional_volumes_default_cpu,
+      'openvino': immich_machine_learning_container_additional_volumes_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_additional_volumes_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_additional_volumes_default_rknn,
+      'rocm': immich_machine_learning_container_additional_volumes_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L13-L15
+immich_machine_learning_container_additional_volumes_default_armn: |-
+  {{
+      (
+        [
+          {
+            'type': 'bind',
+            'src': immich_machine_learning_container_additional_volumes_default_armn_mali_firmware_path,
+            'dst': immich_machine_learning_container_additional_volumes_default_armn_mali_firmware_path,
+            'options': 'ro'
+          }
+        ]
+        if immich_machine_learning_container_additional_volumes_default_armn_mali_firmware_enabled
+        else []
+      )
+      +
+      (
+        [
+          {
+            'type': 'bind',
+            'src': immich_machine_learning_container_additional_volumes_default_armn_mali_driver_path,
+            'dst': immich_machine_learning_container_additional_volumes_default_armn_mali_driver_path,
+            'options': 'ro'
+          }
+        ]
+        if immich_machine_learning_container_additional_volumes_default_armn_mali_driver_enabled
+        else []
+      )
+  }}
+immich_machine_learning_container_additional_volumes_default_armn_mali_firmware_enabled: true
+immich_machine_learning_container_additional_volumes_default_armn_mali_firmware_path: /lib/firmware/mali_csffw.bin
+immich_machine_learning_container_additional_volumes_default_armn_mali_driver_enabled: true
+immich_machine_learning_container_additional_volumes_default_armn_mali_driver_path: /usr/lib/libmali.so
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26
+immich_machine_learning_container_additional_volumes_default_cuda: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_additional_volumes_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L48-L49
+immich_machine_learning_container_additional_volumes_default_openvino: |
+  {{
+    (
+      [
+        {
+          'type': 'bind',
+          'src': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
+          'dst': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
+          'options': 'rw'
+        }
+      ]
+      if immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_enabled: true
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_path: /dev/bus/usb
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L55-L57
+immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
+  {{
+    (
+      [
+        {
+          'type': 'bind',
+          'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
+          'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
+          'options': 'rw'
+        }
+      ]
+      if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'type': 'bind',
+          'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
+          'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
+          'options': 'rw'
+        }
+      ]
+      if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled: true
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path: /dev/bus/usb
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_enabled: true
+immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path: /usr/lib/wsl
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L17
+immich_machine_learning_container_additional_volumes_default_rknn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L36
+immich_machine_learning_container_additional_volumes_default_rocm: []
+
+immich_machine_learning_container_additional_volumes_auto: []
+immich_machine_learning_container_additional_volumes_custom: []
+
+# A list of additional "devices" to attach to the container.
+# Contains definition objects like this: `{"src": "/dev/mali0", "dst": "/dev/mali0", "options": "rwm"}`.
+# See the `--device` documentation for the `docker run` command.
+immich_machine_learning_container_devices: "{{ immich_machine_learning_container_devices_default + immich_machine_learning_container_devices_auto + immich_machine_learning_container_devices_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_devices_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_devices_default_armnn,
+      'cuda': immich_machine_learning_container_devices_default_cuda,
+      'cpu': immich_machine_learning_container_devices_default_cpu,
+      'openvino': immich_machine_learning_container_devices_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_devices_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_devices_default_rknn,
+      'rocm': immich_machine_learning_container_devices_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L11-L12
+immich_machine_learning_container_devices_default_armnn: |-
+  {{
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_armnn_mali0_path,
+          'dst': immich_machine_learning_container_devices_default_armnn_mali0_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_armnn_mali0_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_devices_default_armnn_mali0_enabled: true
+immich_machine_learning_container_devices_default_armnn_mali0_path: /dev/mali0
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26
+immich_machine_learning_container_devices_default_cuda: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_devices_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L46-L47
+immich_machine_learning_container_devices_default_openvino: |-
+  {{
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_openvino_dri_path,
+          'dst': immich_machine_learning_container_devices_default_openvino_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_openvino_dri_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_devices_default_openvino_dri_enabled: true
+immich_machine_learning_container_devices_default_openvino_dri_path: /dev/dri
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L52-L54
+immich_machine_learning_container_devices_default_openvino_wsl: |-
+  {{
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_openvino_wsl_dri_path,
+          'dst': immich_machine_learning_container_devices_default_openvino_wsl_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_openvino_wsl_dri_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_openvino_wsl_dxg_path,
+          'dst': immich_machine_learning_container_devices_default_openvino_wsl_dxg_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_openvino_wsl_dxg_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_devices_default_openvino_wsl_dri_enabled: true
+immich_machine_learning_container_devices_default_openvino_wsl_dri_path: /dev/dri
+immich_machine_learning_container_devices_default_openvino_wsl_dxg_enabled: true
+immich_machine_learning_container_devices_default_openvino_wsl_dxg_path: /dev/dxg
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L21-L22
+immich_machine_learning_container_devices_default_rknn: |-
+  {{
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_rknn_dri_path,
+          'dst': immich_machine_learning_container_devices_default_rknn_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_rknn_dri_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_devices_default_rknn_dri_enabled: true
+immich_machine_learning_container_devices_default_rknn_dri_path: /dev/dri
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L39-L41
+immich_machine_learning_container_devices_default_rocm: |-
+  {{
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_rocm_dri_path,
+          'dst': immich_machine_learning_container_devices_default_rocm_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_rocm_dri_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_machine_learning_container_devices_default_rocm_kfd_path,
+          'dst': immich_machine_learning_container_devices_default_rocm_kfd_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_machine_learning_container_devices_default_rocm_kfd_enabled
+      else []
+    )
+  }}
+immich_machine_learning_container_devices_default_rocm_dri_enabled: true
+immich_machine_learning_container_devices_default_rocm_dri_path: /dev/dri
+immich_machine_learning_container_devices_default_rocm_kfd_enabled: true
+immich_machine_learning_container_devices_default_rocm_kfd_path: /dev/kfd
+
+immich_machine_learning_container_devices_auto: []
+immich_machine_learning_container_devices_custom: []
+
+# A list of additional "device cgroup rules" to attach to the container.
+# Contains strings like this: `"c 42:* rmw"`.
+# See the `--device-cgroup-rule` documentation for the `docker run` command.
+immich_machine_learning_container_device_cgroup_rules: "{{ immich_machine_learning_container_device_cgroup_rules_default + immich_machine_learning_container_device_cgroup_rules_auto + immich_machine_learning_container_device_cgroup_rules_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_device_cgroup_rules_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_device_cgroup_rules_default_armnn,
+      'cuda': immich_machine_learning_container_device_cgroup_rules_default_cuda,
+      'cpu': immich_machine_learning_container_device_cgroup_rules_default_cpu,
+      'openvino': immich_machine_learning_container_device_cgroup_rules_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_device_cgroup_rules_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_device_cgroup_rules_default_rknn,
+      'rocm': immich_machine_learning_container_device_cgroup_rules_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L10
+immich_machine_learning_container_device_cgroup_rules_default_armnn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26
+immich_machine_learning_container_device_cgroup_rules_default_cuda: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_device_cgroup_rules_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L44-L45
+immich_machine_learning_container_device_cgroup_rules_default_openvino: ["c 189:* rmw"]
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L51
+immich_machine_learning_container_device_cgroup_rules_default_openvino_wsl: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L17
+immich_machine_learning_container_device_cgroup_rules_default_rknn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L36
+immich_machine_learning_container_device_cgroup_rules_default_rocm: []
+
+immich_machine_learning_container_device_cgroup_rules_auto: []
+immich_machine_learning_container_device_cgroup_rules_custom: []
+
+# A list of GPUs to pass to the container.
+# Contains strings like this: `"device=0"` or `"all"`.
+# See the `--gpus` documentation for the `docker run` command.
+immich_machine_learning_container_gpus: "{{ (immich_machine_learning_container_gpus_default + immich_machine_learning_container_gpus_auto + immich_machine_learning_container_gpus_custom) | unique }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_gpus_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_gpus_default_armnn,
+      'cuda': immich_machine_learning_container_gpus_default_cuda,
+      'cpu': immich_machine_learning_container_gpus_default_cpu,
+      'openvino': immich_machine_learning_container_gpus_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_gpus_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_gpus_default_rknn,
+      'rocm': immich_machine_learning_container_gpus_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L10
+immich_machine_learning_container_gpus_default_armnn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26-L34
+immich_machine_learning_container_gpus_default_cuda: ["device=0"]
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_gpus_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L43
+immich_machine_learning_container_gpus_default_openvino: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L51
+immich_machine_learning_container_gpus_default_openvino_wsl: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L17
+immich_machine_learning_container_gpus_default_rknn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L36
+immich_machine_learning_container_gpus_default_rocm: []
+
+immich_machine_learning_container_gpus_auto: []
+immich_machine_learning_container_gpus_custom: []
+
+# A list of security options (`--security-opt`) to pass to the container.
+# Contains strings like this: `"label=user:1000"`.
+# See the `--security-opt` documentation for the `docker run` command.
+immich_machine_learning_container_security_opt: "{{ immich_machine_learning_container_security_opt_default + immich_machine_learning_container_security_opt_auto + immich_machine_learning_container_security_opt_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_security_opt_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_security_opt_default_armnn,
+      'cuda': immich_machine_learning_container_security_opt_default_cuda,
+      'cpu': immich_machine_learning_container_security_opt_default_cpu,
+      'openvino': immich_machine_learning_container_security_opt_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_security_opt_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_security_opt_default_rknn,
+      'rocm': immich_machine_learning_container_security_opt_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L10
+immich_machine_learning_container_security_opt_default_armnn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26
+immich_machine_learning_container_security_opt_default_cuda: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_security_opt_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L43
+immich_machine_learning_container_security_opt_default_openvino: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L51
+immich_machine_learning_container_security_opt_default_openvino_wsl: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L18-L20
+immich_machine_learning_container_security_opt_default_rknn:
+  - "systempaths=unconfined"
+  - "apparmor=unconfined"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L36
+immich_machine_learning_container_security_opt_default_rocm: []
+
+immich_machine_learning_container_security_opt_auto: []
+immich_machine_learning_container_security_opt_custom: []
+
+# A list of groups to add the container to (`--group-add`).
+# Contains strings like this: `"video"`.
+# See the `--group-add` documentation for the `docker run` command.
+immich_machine_learning_container_group_add: "{{ (immich_machine_learning_container_group_add_default + immich_machine_learning_container_group_add_auto + immich_machine_learning_container_group_add_custom) | unique }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+immich_machine_learning_container_group_add_default: |-
+  {{
+    {
+      'armnn': immich_machine_learning_container_group_add_default_armnn,
+      'cuda': immich_machine_learning_container_group_add_default_cuda,
+      'cpu': immich_machine_learning_container_group_add_default_cpu,
+      'openvino': immich_machine_learning_container_group_add_default_openvino,
+      'openvino-wsl': immich_machine_learning_container_group_add_default_openvino_wsl,
+      'rknn': immich_machine_learning_container_group_add_default_rknn,
+      'rocm': immich_machine_learning_container_group_add_default_rocm,
+    }[immich_machine_learning_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L10
+immich_machine_learning_container_group_add_default_armnn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L26
+immich_machine_learning_container_group_add_default_cuda: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
+immich_machine_learning_container_group_add_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L43
+immich_machine_learning_container_group_add_default_openvino: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L51
+immich_machine_learning_container_group_add_default_openvino_wsl: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L17
+immich_machine_learning_container_group_add_default_rknn: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L37-L38
+immich_machine_learning_container_group_add_default_rocm: ["video"]
+
+immich_machine_learning_container_group_add_auto: []
+immich_machine_learning_container_group_add_custom: []
 
 # A list of extra arguments to pass to the container (`docker run` command)
 immich_machine_learning_container_extra_arguments: []

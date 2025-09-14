@@ -36,9 +36,6 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 {% if immich_server_container_read_only_enabled %}
                 --read-only \
                 {% endif %}
-                {% if immich_hardware_acceleration == 'cuda' %}
-                --gpus all\
-                {% endif %}
                 --network={{ immich_server_container_network }} \
                 {% if immich_server_container_http_host_bind_port %}
                 -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_http_port }} \
