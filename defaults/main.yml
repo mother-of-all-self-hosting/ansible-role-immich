@@ -50,6 +50,11 @@ immich_redis_username: ''
 immich_redis_password: ''
 immich_redis_dbindex: '0'
 
+# The hostname of the mailer host to use for sending emails.
+# This variable is not used directly in this role, but helps playbooks
+# configure related services (e.g. exim-relay) based on its value.
+immich_smtp_host: ''
+
 ########################################################################
 #                                                                      #
 # /common                                                              #
