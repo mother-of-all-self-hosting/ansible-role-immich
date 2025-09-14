@@ -189,7 +189,8 @@ immich_server_environment_variable_tz: Etc/UTC
 immich_server_environment_variable_immich_port: "{{ immich_server_http_port }}"
 
 # Controls the IMMICH_ENV environment variable for the server component
-# Known values: production, development
+# Known values: production, development, testing
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/server/src/enum.ts#L449-L453
 immich_server_environment_variable_immich_env: production
 
 # Controls the IMMICH_LOG_LEVEL environment variable for the server component
