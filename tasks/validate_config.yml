@@ -10,9 +10,9 @@
       when: true
     - name: immich_gid
       when: true
-    - name: immich_hostname
+    - name: immich_server_hostname
       when: "{{ immich_server_enabled }}"
-    - name: immich_path_prefix
+    - name: immich_server_path_prefix
       when: "{{ immich_server_enabled }}"
     - name: immich_server_container_network
       when: "{{ immich_server_enabled }}"

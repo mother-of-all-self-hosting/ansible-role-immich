@@ -18,22 +18,18 @@ immich_version: v1.142.0
 immich_uid: ''
 immich_gid: ''
 
-# Specify URI scheme for immich_base_url.
+# Specify URI scheme for Immich
 immich_scheme: https
 
-# The hostname at which immich is served.
+# The hostname at which Immich is served.
 immich_hostname: ''
 
-# The path at which immich is exposed.
+# The path at which Immich is exposed.
 # This value must either be `/` or not end with a slash (e.g. `/immich`).
 #
-# Hosting immich under a subpath does not seem to be possible due to immich's
+# Hosting Immich under a subpath does not seem to be possible due to Immich's
 # technical limitations.
 immich_path_prefix: /
-
-# Public facing base URL of the immich service.
-# It should not end with a slash.
-immich_base_url: "{{ immich_scheme }}://{{ immich_hostname }}{{ '' if immich_path_prefix == '/' else immich_path_prefix }}"
 
 immich_database_hostname: ''
 immich_database_port: 5432
@@ -77,6 +73,10 @@ immich_server_base_path: "{{ immich_base_path }}/server"
 immich_server_data_path: "{{ immich_server_base_path }}/data"
 
 immich_server_version: "{{ immich_version }}"
+
+immich_server_scheme: "{{ immich_scheme }}"
+immich_server_hostname: "{{ immich_hostname }}"
+immich_server_path_prefix: "{{ immich_path_prefix }}"
 
 # The HTTP port used internally (in the container) by the server component
 immich_server_http_port: 2283
@@ -499,9 +499,9 @@ immich_server_container_group_add_custom: []
 # To inject your own other container labels, see `immich_server_container_labels_additional_labels`.
 immich_server_container_labels_traefik_enabled: true
 immich_server_container_labels_traefik_docker_network: "{{ immich_server_container_network }}"
-immich_server_container_labels_traefik_hostname: "{{ immich_hostname }}"
+immich_server_container_labels_traefik_hostname: "{{ immich_server_hostname }}"
 # The path prefix must either be `/` or not end with a slash (e.g. `/immich`).
-immich_server_container_labels_traefik_path_prefix: "{{ immich_path_prefix }}"
+immich_server_container_labels_traefik_path_prefix: "{{ immich_server_path_prefix }}"
 immich_server_container_labels_traefik_rule: "Host(`{{ immich_server_container_labels_traefik_hostname }}`){% if immich_server_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ immich_server_container_labels_traefik_path_prefix }}`){% endif %}"
 immich_server_container_labels_traefik_priority: 0
 immich_server_container_labels_traefik_entrypoints: web-secure
