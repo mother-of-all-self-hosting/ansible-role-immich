@@ -455,8 +455,8 @@ immich_machine_learning_container_additional_volumes_default_openvino: |
       else []
     )
   }}
-immich_machine_learning_container_additional_volumes_default_openvino_wsl_enabled: true
-immich_machine_learning_container_additional_volumes_default_openvino_wsl_path: /dev/bus/usb
+immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled: true
+immich_machine_learning_container_additional_volumes_default_openvino_usb_path: /dev/bus/usb
 
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L55-L57
 immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
