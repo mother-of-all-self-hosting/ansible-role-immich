@@ -48,6 +48,18 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 {% for volume in immich_server_container_additional_volumes %}
                 --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options else '' }} \
                 {% endfor %}
+                {% for security_opt in immich_server_container_security_opt %}
+                --security-opt={{ security_opt }} \
+                {% endfor %}
+                {% for device in immich_server_container_devices %}
+                --device={{ device.src }}:{{ device.dst }}{{ (':' + device.options) if device.options else '' }} \
+                {% endfor %}
+                {% for device_cgroup_rule in immich_server_container_device_cgroup_rules %}
+                --device-cgroup-rule="{{ device_cgroup_rule }}" \
+                {% endfor %}
+                {% for gpu in immich_server_container_gpus %}
+                --gpus={{ gpu }} \
+                {% endfor %}
                 {% if immich_server_container_extra_arguments | length > 0 %}
                 {{ immich_server_container_extra_arguments | join(' ') }} \
                 {% endif %}

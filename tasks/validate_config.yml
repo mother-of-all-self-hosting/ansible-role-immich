@@ -13,6 +13,12 @@
     - immich_server_container_network
     - immich_machine_learning_container_network
 
+- name: Fail if immich_server_transcoding_hardware_acceleration is invalid
+  ansible.builtin.fail:
+    msg: >-
+      immich_server_transcoding_hardware_acceleration (`{{ immich_server_transcoding_hardware_acceleration }}`) must be one of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl.
+  when: immich_server_transcoding_hardware_acceleration not in ['cpu', 'nvenc', 'quicksync', 'rkmpp', 'vaapi', 'vaapi-wsl']
+
 - name: Fail if immich_machine_learning_hardware_acceleration is invalid
   ansible.builtin.fail:
     msg: >-

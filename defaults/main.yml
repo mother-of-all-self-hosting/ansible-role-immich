@@ -74,6 +74,15 @@ immich_server_version: "{{ immich_version }}"
 # The HTTP port used internally (in the container) by the server component
 immich_server_http_port: 2283
 
+# Controls how to configure the server container for hardware acceleration for transcoding.
+#
+# One of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl
+# Ref:
+# - https://immich.app/docs/features/hardware-transcoding
+# - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
+# - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/docker-compose.yml
+immich_server_transcoding_hardware_acceleration: cpu
+
 immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
 immich_server_container_image_tag: "{{ immich_server_version }}"
 immich_server_container_image_registry_prefix: "{{ immich_server_container_image_registry_prefix_upstream }}"
@@ -130,7 +139,341 @@ immich_server_container_http_host_bind_port: ''
 # if you wish to mount your own files into the container.
 # Contains definition objects like this: `{"type": "bind", "src": "/outside", "dst": "/inside", "options": "readonly"}.
 # See the `--mount` documentation for the `docker run` command.
-immich_server_container_additional_volumes: []
+immich_server_container_additional_volumes: "{{ immich_server_container_additional_volumes_default + immich_server_container_additional_volumes_auto + immich_server_container_additional_volumes_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
+immich_server_container_additional_volumes_default: |-
+  {{
+    {
+      'cpu': immich_server_container_additional_volumes_default_cpu,
+      'nvenc': immich_server_container_additional_volumes_default_nvenc,
+      'quicksync': immich_server_container_additional_volumes_default_quicksync,
+      'rkmpp': immich_server_container_additional_volumes_default_rkmpp,
+      'vaapi': immich_server_container_additional_volumes_default_vaapi,
+      'vaapi-wsl': immich_server_container_additional_volumes_default_vaapi_wsl,
+    }[immich_server_transcoding_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L10
+immich_server_container_additional_volumes_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L12
+immich_server_container_additional_volumes_default_nvenc: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L24
+immich_server_container_additional_volumes_default_quicksync: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L40-L42
+immich_server_container_additional_volumes_default_rkmpp: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L44
+immich_server_container_additional_volumes_default_vaapi: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L52-L53
+immich_server_container_additional_volumes_default_vaapi_wsl: |-
+  {{
+    (
+      [
+        {
+          'type': 'bind',
+          'src': immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_path,
+          'dst': immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_path,
+          'options': ''
+        }
+      ]
+      if immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_enabled
+      else []
+    )
+  }}
+
+immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_enabled: true
+immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_path: /usr/lib/wsl
+
+immich_server_container_additional_volumes_auto: []
+immich_server_container_additional_volumes_custom: []
+
+# A list of additional "devices" to attach to the container.
+# Contains definition objects like this: `{"src": "/dev/mali0", "dst": "/dev/mali0", "options": "rwm"}`.
+# See the `--device` documentation for the `docker run` command.
+immich_server_container_devices: "{{ immich_server_container_devices_default + immich_server_container_devices_auto + immich_server_container_devices_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
+immich_server_container_devices_default: |-
+  {{
+    {
+      'cpu': immich_server_container_devices_default_cpu,
+      'nvenc': immich_server_container_devices_default_nvenc,
+      'quicksync': immich_server_container_devices_default_quicksync,
+      'rkmpp': immich_server_container_devices_default_rkmpp,
+      'vaapi': immich_server_container_devices_default_vaapi,
+      'vaapi-wsl': immich_server_container_devices_default_vaapi_wsl,
+    }[immich_server_transcoding_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L10
+immich_server_container_devices_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L12
+immich_server_container_devices_default_nvenc: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L25-L26
+immich_server_container_devices_default_quicksync: |-
+  {{
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_quicksync_dri_path,
+          'dst': immich_server_container_devices_default_quicksync_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_quicksync_dri_enabled
+      else []
+    )
+  }}
+immich_server_container_devices_default_quicksync_dri_enabled: true
+immich_server_container_devices_default_quicksync_dri_path: /dev/dri
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L34-L39
+immich_server_container_devices_default_rkmpp: |-
+  {{
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_rkmpp_rga_path,
+          'dst': immich_server_container_devices_default_rkmpp_rga_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_rkmpp_rga_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_rkmpp_dri_path,
+          'dst': immich_server_container_devices_default_rkmpp_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_rkmpp_dri_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_rkmpp_dma_heap_path,
+          'dst': immich_server_container_devices_default_rkmpp_dma_heap_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_rkmpp_dma_heap_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_rkmpp_mpp_service_path,
+          'dst': immich_server_container_devices_default_rkmpp_mpp_service_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_rkmpp_mpp_service_enabled
+      else []
+    )
+  }}
+immich_server_container_devices_default_rkmpp_rga_enabled: true
+immich_server_container_devices_default_rkmpp_rga_path: /dev/rga
+immich_server_container_devices_default_rkmpp_dri_enabled: true
+immich_server_container_devices_default_rkmpp_dri_path: /dev/dri
+immich_server_container_devices_default_rkmpp_dma_heap_enabled: true
+immich_server_container_devices_default_rkmpp_dma_heap_path: /dev/dma_heap
+immich_server_container_devices_default_rkmpp_mpp_service_enabled: true
+immich_server_container_devices_default_rkmpp_mpp_service_path: /dev/mpp_service
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L45-L46
+immich_server_container_devices_default_vaapi: |-
+  {{
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_vaapi_dri_path,
+          'dst': immich_server_container_devices_default_vaapi_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_vaapi_dri_enabled
+      else []
+    )
+  }}
+immich_server_container_devices_default_vaapi_dri_enabled: true
+immich_server_container_devices_default_vaapi_dri_path: /dev/dri
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L49-L51
+immich_server_container_devices_default_vaapi_wsl: |-
+  {{
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_vaapi_wsl_dri_path,
+          'dst': immich_server_container_devices_default_vaapi_wsl_dri_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_vaapi_wsl_dri_enabled
+      else []
+    )
+    +
+    (
+      [
+        {
+          'src': immich_server_container_devices_default_vaapi_wsl_dxg_path,
+          'dst': immich_server_container_devices_default_vaapi_wsl_dxg_path,
+          'options': 'rwm'
+        }
+      ]
+      if immich_server_container_devices_default_vaapi_wsl_dxg_enabled
+      else []
+    )
+  }}
+immich_server_container_devices_default_vaapi_wsl_dri_enabled: true
+immich_server_container_devices_default_vaapi_wsl_dri_path: /dev/dri
+immich_server_container_devices_default_vaapi_wsl_dxg_enabled: true
+immich_server_container_devices_default_vaapi_wsl_dxg_path: /dev/dxg
+
+immich_server_container_devices_auto: []
+immich_server_container_devices_custom: []
+
+# A list of additional "device cgroup rules" to attach to the container.
+# Contains strings like this: `"c 42:* rmw"`.
+# See the `--device-cgroup-rule` documentation for the `docker run` command.
+immich_server_container_device_cgroup_rules: "{{ immich_server_container_device_cgroup_rules_default + immich_server_container_device_cgroup_rules_auto + immich_server_container_device_cgroup_rules_custom }}"
+
+immich_server_container_device_cgroup_rules_default: []
+immich_server_container_device_cgroup_rules_auto: []
+immich_server_container_device_cgroup_rules_custom: []
+
+# A list of GPUs to pass to the container.
+# Contains strings like this: `"device=0"` or `"all"`.
+# See the `--gpus` documentation for the `docker run` command.
+immich_server_container_gpus: "{{ (immich_server_container_gpus_default + immich_server_container_gpus_auto + immich_server_container_gpus_custom) | unique }}"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
+immich_server_container_gpus_default: |-
+  {{
+    {
+      'cpu': immich_server_container_gpus_default_cpu,
+      'nvenc': immich_server_container_gpus_default_nvenc,
+      'quicksync': immich_server_container_gpus_default_quicksync,
+      'rkmpp': immich_server_container_gpus_default_rkmpp,
+      'vaapi': immich_server_container_gpus_default_vaapi,
+      'vaapi-wsl': immich_server_container_gpus_default_vaapi_wsl,
+    }[immich_server_transcoding_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L10
+immich_server_container_gpus_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L12-L22
+immich_server_container_gpus_default_nvenc: ["device=0"]
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L24
+immich_server_container_gpus_default_quicksync: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L28
+immich_server_container_gpus_default_rkmpp: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L44
+immich_server_container_gpus_default_vaapi: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L48
+immich_server_container_gpus_default_vaapi_wsl: []
+
+immich_server_container_gpus_auto: []
+immich_server_container_gpus_custom: []
+
+# A list of security options (`--security-opt`) to pass to the container.
+# Contains strings like this: `"label=user:1000"`.
+# See the `--security-opt` documentation for the `docker run` command.
+immich_server_container_security_opt: "{{ immich_server_container_security_opt_default + immich_server_container_security_opt_auto + immich_server_container_security_opt_custom }}"
+
+# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.transcoding.yml#L48
+immich_server_container_security_opt_default: |-
+  {{
+    {
+      'cpu': immich_server_container_security_opt_default_cpu,
+      'nvenc': immich_server_container_security_opt_default_nvenc,
+      'quicksync': immich_server_container_security_opt_default_quicksync,
+      'rkmpp': immich_server_container_security_opt_default_rkmpp,
+      'vaapi': immich_server_container_security_opt_default_vaapi,
+      'vaapi-wsl': immich_server_container_security_opt_default_vaapi_wsl,
+    }[immich_server_transcoding_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L10
+immich_server_container_security_opt_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L12
+immich_server_container_security_opt_default_nvenc: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L24
+immich_server_container_security_opt_default_quicksync: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L29-L31
+immich_server_container_security_opt_default_rkmpp:
+  - "systempaths=unconfined"
+  - "apparmor=unconfined"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L44
+immich_server_container_security_opt_default_vaapi: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L48
+immich_server_container_security_opt_default_vaapi_wsl: []
+
+immich_server_container_security_opt_auto: []
+immich_server_container_security_opt_custom: []
+
+# A list of groups to add the container to (`--group-add`).
+# Contains strings like this: `"video"`.
+# See the `--group-add` documentation for the `docker run` command.
+immich_server_container_group_add: "{{ (immich_server_container_group_add_default + immich_server_container_group_add_auto + immich_server_container_group_add_custom) | unique }}"
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
+immich_server_container_group_add_default: |-
+  {{
+    {
+      'cpu': immich_server_container_group_add_default_cpu,
+      'nvenc': immich_server_container_group_add_default_nvenc,
+      'quicksync': immich_server_container_group_add_default_quicksync,
+      'rkmpp': immich_server_container_group_add_default_rkmpp,
+      'vaapi': immich_server_container_group_add_default_vaapi,
+      'vaapi-wsl': immich_server_container_group_add_default_vaapi_wsl,
+    }[immich_server_transcoding_hardware_acceleration]
+  }}
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L10
+immich_server_container_group_add_default_cpu: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L12
+immich_server_container_group_add_default_nvenc: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L24
+immich_server_container_group_add_default_quicksync: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L32-L33
+immich_server_container_group_add_default_rkmpp: ["video"]
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L44
+immich_server_container_group_add_default_vaapi: []
+
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml#L48
+immich_server_container_group_add_default_vaapi_wsl: []
+
+immich_server_container_group_add_auto: []
+immich_server_container_group_add_custom: []
 
 # immich_server_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
 # See `../templates/labels.j2` for details.
@@ -246,6 +589,9 @@ immich_server_environment_variable_redis_password: "{{ immich_redis_password }}"
 # Controls the REDIS_DBINDEX environment variable for the server component
 immich_server_environment_variable_redis_dbindex: "{{ immich_redis_dbindex }}"
 
+# Controls the LIBVA_DRIVER_NAME environment variable for the server component
+immich_server_environment_variable_libva_driver_name: "{% if immich_server_transcoding_hardware_acceleration == 'vaapi-wsl' %}d3d12{% endif %}"
+
 # Additional environment variables for the server container
 immich_server_environment_variables_additional_variables: ''
 
@@ -347,7 +693,7 @@ immich_machine_learning_http_port: 3003
 #
 # One of: armnn, cuda, cpu, openvino, openvino-wsl, rknn, rocm
 # Ref:
-# - https://docs.immich.app/installation/hardware-acceleration
+# - https://immich.app/docs/features/ml-hardware-acceleration
 # - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml
 # - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/docker-compose.yml
 immich_machine_learning_hardware_acceleration: cpu
@@ -408,7 +754,7 @@ immich_machine_learning_container_http_host_bind_port: ''
 # See the `--mount` documentation for the `docker run` command.
 immich_machine_learning_container_additional_volumes: "{{ immich_machine_learning_container_additional_volumes_default + immich_machine_learning_container_additional_volumes_auto + immich_machine_learning_container_additional_volumes_custom }}"
 
-# Ref: https://github.com/immich-app/immich/blob/main/docker/hwaccel.ml.yml
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml
 immich_machine_learning_container_additional_volumes_default: |-
   {{
     {
