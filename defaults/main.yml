@@ -191,7 +191,15 @@ immich_server_systemd_required_services_list_auto: []
 immich_server_systemd_required_services_list_custom: []
 
 # List of systemd services that the immich/server systemd service wants
-immich_server_systemd_wanted_services_list: []
+immich_server_systemd_wanted_services_list: "{{ (immich_server_systemd_wanted_services_list_default + immich_server_systemd_wanted_services_list_auto + immich_server_systemd_wanted_services_list_custom) | unique }}"
+immich_server_systemd_wanted_services_list_default: |-
+  {{
+    (
+      [immich_machine_learning_identifier + '.service']
+    )
+  }}
+immich_server_systemd_wanted_services_list_auto: []
+immich_server_systemd_wanted_services_list_custom: []
 
 # Controls the TZ environment variable for the server component
 immich_server_environment_variable_tz: Etc/UTC
