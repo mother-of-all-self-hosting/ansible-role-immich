@@ -1,6 +1,6 @@
-# immich Ansible role
+# Immich Ansible role
 
-This is an [Ansible](https://www.ansible.com/) role which installs [immich](https://immich.app) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Immich](https://immich.app) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
 This role *implicitly* depends on:
 

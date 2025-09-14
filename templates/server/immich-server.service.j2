@@ -1,5 +1,5 @@
 [Unit]
-Description=immich server ({{ immich_server_identifier }})
+Description=Immich server component ({{ immich_server_identifier }})
 {% for service in immich_server_systemd_required_services_list %}
 Requires={{ service }}
 After={{ service }}

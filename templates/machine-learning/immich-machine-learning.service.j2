@@ -1,5 +1,5 @@
 [Unit]
-Description=immich machine learning ({{ immich_machine_learning_identifier }})
+Description=Immich machine-learning component ({{ immich_machine_learning_identifier }})
 {% for service in immich_machine_learning_systemd_required_services_list %}
 Requires={{ service }}
 After={{ service }}
