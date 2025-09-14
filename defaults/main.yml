@@ -293,10 +293,14 @@ immich_server_hsts_preload_enabled: false
 immich_machine_learning_identifier: "{{ immich_identifier }}-machine-learning"
 
 immich_machine_learning_base_path: "{{ immich_base_path }}/machine-learning"
+
+# See `immich_machine_learning_environment_variable_machine_learning_cache_folder`
 immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cache"
+
 # huggingface hub and its hf-xet (https://pypi.org/project/hf-xet/) dependency try to write to `/.cache`,
 # so we provide a separate directory for that.
 immich_machine_learning_dot_cache_path: "{{ immich_machine_learning_base_path }}/dot-cache"
+
 # See `immich_machine_learning_container_tmp_tmpfs_enabled`
 immich_machine_learning_tmp_path: "{{ immich_machine_learning_base_path }}/tmp"
 
