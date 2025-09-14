@@ -193,7 +193,8 @@ immich_server_environment_variable_immich_port: "{{ immich_server_http_port }}"
 immich_server_environment_variable_immich_env: production
 
 # Controls the IMMICH_LOG_LEVEL environment variable for the server component
-# Known values: verbose, debug, log, warn, error
+# Known values: verbose, debug, log, warn, error, fatal
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/server/src/enum.ts#L414-L421
 immich_server_environment_variable_immich_log_level: log
 
 # Controls the DB_URL environment variable for the server component
@@ -832,7 +833,8 @@ immich_machine_learning_systemd_wanted_services_list: []
 immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_http_port }}"
 
 # Controls the IMMICH_LOG_LEVEL environment variable for the machine-learning component
-# Known values: verbose, debug, info, warn, error
+# Known values: critical, error, warning, warn (alias for warning), info, log (alias for info), debug, verbose (alias for debug)
+# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/machine-learning/immich_ml/config.py#L93-L102
 immich_machine_learning_environment_variable_immich_log_level: info
 
 # Controls the MPLCONFIGDIR environment variable for the machine-learning component.
