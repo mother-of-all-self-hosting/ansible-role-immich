@@ -19,6 +19,8 @@
       when: true
     - path: "{{ immich_machine_learning_cache_path }}"
       when: true
+    - path: "{{ immich_machine_learning_dot_cache_path }}"
+      when: true
     - path: "{{ immich_machine_learning_tmp_path }}"
       when: "{{ not immich_machine_learning_container_tmp_tmpfs_enabled }}"
 
