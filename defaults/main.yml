@@ -386,7 +386,7 @@ immich_machine_learning_container_additional_volumes: "{{ immich_machine_learnin
 immich_machine_learning_container_additional_volumes_default: |-
   {{
     {
-      'armnn': immich_machine_learning_container_additional_volumes_default_armn,
+      'armnn': immich_machine_learning_container_additional_volumes_default_armnn,
       'cuda': immich_machine_learning_container_additional_volumes_default_cuda,
       'cpu': immich_machine_learning_container_additional_volumes_default_cpu,
       'openvino': immich_machine_learning_container_additional_volumes_default_openvino,
@@ -397,7 +397,7 @@ immich_machine_learning_container_additional_volumes_default: |-
   }}
 
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L13-L15
-immich_machine_learning_container_additional_volumes_default_armn: |-
+immich_machine_learning_container_additional_volumes_default_armnn: |-
   {{
       (
         [
