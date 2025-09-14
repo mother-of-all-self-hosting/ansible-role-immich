@@ -1,9 +1,8 @@
 galaxy_info:
   author: IUCCA
-  company: IUCCA
+  namespace: iucca
   role_name: immich
-  namespace: IUCCA
-  description: immich photo and video management solution
+  description: Ansible role to install an Immich instance
   platforms:
     - name: Debian
       versions:
@@ -11,11 +10,11 @@ galaxy_info:
     - name: Ubuntu
       versions:
         - all
-    - name: Archlinux
+    - name: ArchLinux
       versions:
         - all
     - name: EL
       versions:
-        - 7
+        - "7"
   license: GPL-3.0-or-later
-  min_ansible_version: '2.1'
+  min_ansible_version: "2.1"
