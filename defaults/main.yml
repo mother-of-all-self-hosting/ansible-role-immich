@@ -592,6 +592,10 @@ immich_server_environment_variable_redis_dbindex: "{{ immich_redis_dbindex }}"
 # Controls the LIBVA_DRIVER_NAME environment variable for the server component
 immich_server_environment_variable_libva_driver_name: "{% if immich_server_transcoding_hardware_acceleration == 'vaapi-wsl' %}d3d12{% endif %}"
 
+# Controls the IMMICH_TRUSTED_PROXIES environment variable for the server component
+# Example: "1.2.3.4" or "1.2.3.4/32, 5.6.7.0/24"
+immich_server_environment_variable_immich_trusted_proxies: "{% if immich_server_container_labels_traefik_enabled %}0.0.0.0{% endif %}"
+
 # Additional environment variables for the server container
 immich_server_environment_variables_additional_variables: ''
 
