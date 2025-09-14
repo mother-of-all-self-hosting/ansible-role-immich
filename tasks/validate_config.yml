@@ -38,14 +38,11 @@
             - immich_server_container_labels_traefik_hostname
             - immich_server_container_labels_traefik_path_prefix
 
-        # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
-        # Knowing that `immich_server_container_labels_traefik_path_prefix` does not end with a slash
-        # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
-        - name: Fail if immich_server_container_labels_traefik_path_prefix ends with a slash
+        - name: Fail if immich_server_container_labels_traefik_path_prefix is not `/`
           ansible.builtin.fail:
             msg: >-
-              immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/immich`).
-          when: "immich_server_container_labels_traefik_path_prefix != '/' and immich_server_container_labels_traefik_path_prefix[-1] == '/'"
+              immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must be `/` due to Immich limitations (see https://github.com/immich-app/immich/issues/14530)
+          when: "immich_server_container_labels_traefik_path_prefix != '/'"
 
 - when: immich_machine_learning_enabled | bool
   block:

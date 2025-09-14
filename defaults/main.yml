@@ -27,8 +27,10 @@ immich_hostname: ''
 # The path at which Immich is exposed.
 # This value must either be `/` or not end with a slash (e.g. `/immich`).
 #
-# Hosting Immich under a subpath does not seem to be possible due to Immich's
-# technical limitations.
+# Hosting Immich under a subpath does not seem to be possible due to Immich's technical limitations.
+# Ref:
+# - https://github.com/immich-app/immich/issues/14530
+# - https://github.com/immich-app/immich/discussions/1679
 immich_path_prefix: /
 
 immich_database_hostname: ''
