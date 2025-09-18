@@ -6,3 +6,13 @@ immich_container_networks: |-
       [immich_machine_learning_container_network] if immich_machine_learning_enabled else []
     ) | unique
   }}
+
+# Additional SQL queries to run (with a privileged user inside the Immich Postgres database)
+# after the database is created, to get it prepared for Immich.
+#
+# Ref: https://immich.app/docs/administration/postgres-standalone/#without-superuser-permission
+#
+# This variable is not used in this role, but can assist with integration with other roles.
+immich_database_preparation_sql_queries:
+  - "CREATE EXTENSION IF NOT EXISTS vchord CASCADE;"
+  - "CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;"
