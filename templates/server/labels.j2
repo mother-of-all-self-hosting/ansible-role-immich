@@ -7,6 +7,10 @@ traefik.docker.network={{ immich_server_container_labels_traefik_docker_network 
 
 {% set middlewares = [] %}
 
+{% if immich_server_container_labels_traefik_compression_middleware_enabled %}
+{% set middlewares = middlewares + [immich_server_container_labels_traefik_compression_middleware_name] %}
+{% endif %}
+
 {% if immich_server_container_labels_traefik_path_prefix != '/' %}
 traefik.http.middlewares.{{ immich_server_identifier }}-slashless-redirect.redirectregex.regex=({{ immich_server_container_labels_traefik_path_prefix | quote }})$
 traefik.http.middlewares.{{ immich_server_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
