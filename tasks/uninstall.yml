@@ -7,14 +7,16 @@
 
 ---
 
-- when: not immich_server_enabled | bool or not immich_enabled | bool
+- name: Uninstall Immich server if Immich server disabled or Immich disabled as a whole
+  when: not immich_server_enabled | bool or not immich_enabled | bool
   block:
     - name: Check existence of Immich server systemd service
       ansible.builtin.stat:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
       register: immich_server_service_stat
 
-    - when: immich_server_service_stat.stat.exists | bool
+    - name: Uninstall Immich server when Immich server systemd service exists
+      when: immich_server_service_stat.stat.exists | bool
       block:
         - name: Ensure Immich server systemd services are stopped
           ansible.builtin.service:
@@ -33,14 +35,16 @@
             path: "{{ immich_server_base_path }}"
             state: absent
 
-- when: not immich_machine_learning_enabled | bool or not immich_enabled | bool
+- name: Uninstall Immich machine-learning if Immich machine-learning disabled or Immich disabled as a whole
+  when: not immich_machine_learning_enabled | bool or not immich_enabled | bool
   block:
     - name: Check existence of Immich machine-learning systemd service
       ansible.builtin.stat:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
       register: immich_machine_learning_service_stat
 
-    - when: immich_machine_learning_service_stat.stat.exists | bool
+    - name: Uninstall Immich machine-learning when Immich machine-learning systemd service exists
+      when: immich_machine_learning_service_stat.stat.exists | bool
       block:
         - name: Ensure Immich machine-learning systemd service is stopped
           ansible.builtin.service:

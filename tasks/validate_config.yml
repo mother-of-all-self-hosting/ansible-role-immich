@@ -26,7 +26,8 @@
     - name: immich_machine_learning_container_network
       when: "{{ immich_machine_learning_enabled }}"
 
-- when: immich_server_enabled | bool
+- name: Validate Immich server-related configuration when Immich server enabled
+  when: immich_server_enabled | bool
   block:
     - name: Fail if immich_server_transcoding_hardware_acceleration is invalid
       ansible.builtin.fail:
@@ -34,7 +35,8 @@
           immich_server_transcoding_hardware_acceleration (`{{ immich_server_transcoding_hardware_acceleration }}`) must be one of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl.
       when: immich_server_transcoding_hardware_acceleration not in ['cpu', 'nvenc', 'quicksync', 'rkmpp', 'vaapi', 'vaapi-wsl']
 
-    - when: immich_server_container_labels_traefik_enabled | bool
+    - name: Validate Immich Traefik labels-related configuration when Traefik labels enabled
+      when: immich_server_container_labels_traefik_enabled | bool
       block:
         - name: Fail if required Immich Traefik settings not defined
           ansible.builtin.fail:
@@ -51,7 +53,8 @@
               immich_server_container_labels_traefik_path_prefix (`{{ immich_server_container_labels_traefik_path_prefix }}`) must be `/` due to Immich limitations (see https://github.com/immich-app/immich/issues/14530)
           when: "immich_server_container_labels_traefik_path_prefix != '/'"
 
-- when: immich_machine_learning_enabled | bool
+- name: Validate Immich Machine Learning-related configuration when Immich Machine Learning enabled
+  when: immich_machine_learning_enabled | bool
   block:
     - name: Fail if immich_machine_learning_hardware_acceleration is invalid
       ansible.builtin.fail:

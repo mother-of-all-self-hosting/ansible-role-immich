@@ -7,24 +7,28 @@
 
 ---
 
-- block:
-    - when: immich_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
-    - when: immich_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
-
+- name: Install Immich
   tags:
     - setup-all
     - setup-immich
     - install-all
     - install-immich
+  block:
+    - name: Validate Immich configuration
+      when: immich_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
 
-- block:
-    # If the whole role is disabled or any of its subcomponents are disabled, run the uninstall tasks.
-    # They will check what needs to be uninstalled.
-    - when: not (immich_enabled and immich_machine_learning_enabled and immich_server_enabled)
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+    - name: Actually install Immich
+      when: immich_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+
+- name: Uninstall Immich
   tags:
     - setup-all
     - setup-immich
+  block:
+    # If the whole role is disabled or any of its subcomponents are disabled, run the uninstall tasks.
+    # They will check what needs to be uninstalled.
+    - name: Actually uninstall Immich
+      when: not (immich_enabled and immich_machine_learning_enabled and immich_server_enabled)
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
