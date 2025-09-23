@@ -22,7 +22,7 @@ immich_identifier: immich
 immich_base_path: "/{{ immich_identifier }}"
 
 # renovate: datasource=docker depName=ghcr.io/immich-app/immich-server versioning=semver
-immich_version: v1.143.0
+immich_version: v1.143.1
 
 immich_uid: ''
 immich_gid: ''
