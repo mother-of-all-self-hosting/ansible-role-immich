@@ -1,7 +1,9 @@
+---
 galaxy_info:
-  author: IUCCA
-  namespace: iucca
+  author: Slavi Pantaleev
+  company: Devture Ltd
   role_name: immich
+  namespace: devture
   description: Ansible role to install an Immich instance
   platforms:
     - name: Debian
@@ -15,6 +17,6 @@ galaxy_info:
         - all
     - name: EL
       versions:
-        - "7"
-  license: GPL-3.0-or-later
+        - all
+  license: AGPL-3.0-or-later
   min_ansible_version: "2.1"
