@@ -539,12 +539,15 @@ immich_server_container_labels_traefik_additional_response_headers_custom: {}
 
 # immich_server_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
 # See `../templates/labels.j2` for details.
+# To add your own custom labels, use `immich_server_container_labels_additional_labels_custom`
 #
 # Example:
-# immich_server_container_labels_additional_labels: |
+# immich_server_container_labels_additional_labels_custom: |
 #   my.label=1
 #   another.label="here"
-immich_server_container_labels_additional_labels: ''
+immich_server_container_labels_additional_labels: "{{ immich_server_container_labels_additional_labels_auto | combine(immich_server_container_labels_additional_labels_custom) }}"
+immich_server_container_labels_additional_labels_auto: {}
+immich_server_container_labels_additional_labels_custom: {}
 
 # Specifies how often the container health-check will run.
 #
