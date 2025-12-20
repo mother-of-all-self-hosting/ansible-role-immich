@@ -558,7 +558,9 @@ immich_server_container_labels_additional_labels: ''
 immich_server_container_health_interval: "{{ '5s' if immich_server_container_labels_traefik_enabled else '30s' }}"
 
 # A list of extra arguments to pass to the container (`docker run` command)
-immich_server_container_extra_arguments: []
+immich_server_container_extra_arguments: "{{ immich_server_container_extra_arguments_auto + immich_server_container_extra_arguments_custom }}"
+immich_server_container_extra_arguments_auto: []
+immich_server_container_extra_arguments_custom: []
 
 # List of systemd services that the immich/server systemd service depends on
 immich_server_systemd_required_services_list: "{{ immich_server_systemd_required_services_list_default + immich_server_systemd_required_services_list_auto + immich_server_systemd_required_services_list_custom }}"
@@ -1229,7 +1231,9 @@ immich_machine_learning_container_group_add_auto: []
 immich_machine_learning_container_group_add_custom: []
 
 # A list of extra arguments to pass to the container (`docker run` command)
-immich_machine_learning_container_extra_arguments: []
+immich_machine_learning_container_extra_arguments: "{{ immich_machine_learning_container_extra_arguments_auto + immich_machine_learning_container_extra_arguments_custom }}"
+immich_machine_learning_container_extra_arguments_auto: []
+immich_machine_learning_container_extra_arguments_custom: []
 
 # List of systemd services that the immich/server systemd service depends on
 immich_machine_learning_systemd_required_services_list: "{{ immich_machine_learning_systemd_required_services_list_default + immich_machine_learning_systemd_required_services_list_auto + immich_machine_learning_systemd_required_services_list_custom }}"
