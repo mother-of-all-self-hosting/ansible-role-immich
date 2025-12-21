@@ -560,7 +560,7 @@ immich_server_container_labels_additional_labels_custom: {}
 # For non-Traefik setups, we use the default healthcheck interval (30s) to decrease overhead.
 immich_server_container_health_interval: "{{ '5s' if immich_server_container_labels_traefik_enabled else '30s' }}"
 
-# A list of extra arguments to pass to the container (`docker run` command)
+# A list of extra arguments to pass to the container (`docker create` command)
 immich_server_container_extra_arguments: "{{ immich_server_container_extra_arguments_auto + immich_server_container_extra_arguments_custom }}"
 immich_server_container_extra_arguments_auto: []
 immich_server_container_extra_arguments_custom: []
@@ -1233,7 +1233,7 @@ immich_machine_learning_container_group_add_default_rocm: ["video"]
 immich_machine_learning_container_group_add_auto: []
 immich_machine_learning_container_group_add_custom: []
 
-# A list of extra arguments to pass to the container (`docker run` command)
+# A list of extra arguments to pass to the container (`docker create` command)
 immich_machine_learning_container_extra_arguments: "{{ immich_machine_learning_container_extra_arguments_auto + immich_machine_learning_container_extra_arguments_custom }}"
 immich_machine_learning_container_extra_arguments_auto: []
 immich_machine_learning_container_extra_arguments_custom: []
