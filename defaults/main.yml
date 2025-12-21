@@ -24,14 +24,14 @@ immich_base_path: "/{{ immich_identifier }}"
 # renovate: datasource=docker depName=ghcr.io/immich-app/immich-server versioning=semver
 immich_version: v2.4.1
 
-immich_uid: ''
-immich_gid: ''
+immich_uid: ""
+immich_gid: ""
 
 # Specify URI scheme for Immich
 immich_scheme: https
 
 # The hostname at which Immich is served.
-immich_hostname: ''
+immich_hostname: ""
 
 # The path at which Immich is exposed.
 # This value must either be `/` or not end with a slash (e.g. `/immich`).
@@ -42,25 +42,25 @@ immich_hostname: ''
 # - https://github.com/immich-app/immich/discussions/1679
 immich_path_prefix: /
 
-immich_database_hostname: ''
+immich_database_hostname: ""
 immich_database_port: 5432
 immich_database_username: immich
-immich_database_password: ''
+immich_database_password: ""
 immich_database_name: immich
 immich_database_sslmode: require
 
-immich_redis_url: ''
-immich_redis_socket: ''
-immich_redis_hostname: ''
+immich_redis_url: ""
+immich_redis_socket: ""
+immich_redis_hostname: ""
 immich_redis_port: '6379'
-immich_redis_username: ''
-immich_redis_password: ''
+immich_redis_username: ""
+immich_redis_password: ""
 immich_redis_dbindex: '0'
 
 # The hostname of the mailer host to use for sending emails.
 # This variable is not used directly in this role, but helps playbooks
 # configure related services (e.g. exim-relay) based on its value.
-immich_smtp_host: ''
+immich_smtp_host: ""
 
 ########################################################################
 #                                                                      #
@@ -160,7 +160,7 @@ immich_server_container_links_custom: []
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
 # See immich_server_http_port
-immich_server_container_http_host_bind_port: ''
+immich_server_container_http_host_bind_port: ""
 
 # A list of additional "volumes" to mount in the container.
 # This list gets populated dynamically at runtime. You can provide a different default value,
@@ -206,7 +206,7 @@ immich_server_container_additional_volumes_default_vaapi_wsl: |-
           'type': 'bind',
           'src': immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_path,
           'dst': immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_path,
-          'options': ''
+          'options': ""
         }
       ]
       if immich_server_container_additional_volumes_default_vaapi_wsl_usr_lib_wsl_enabled
@@ -635,7 +635,7 @@ immich_server_environment_variable_libva_driver_name: "{% if immich_server_trans
 immich_server_environment_variable_immich_trusted_proxies: "{% if immich_server_container_labels_traefik_enabled %}0.0.0.0{% endif %}"
 
 # Additional environment variables for the server container
-immich_server_environment_variables_additional_variables: ''
+immich_server_environment_variables_additional_variables: ""
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
@@ -721,7 +721,7 @@ immich_machine_learning_version_hardware_acceleration_suffix: |-
     {
       'armnn': '-armnn',
       'cuda': '-cuda',
-      'cpu': '',
+      'cpu': "",
       'openvino': '-openvino',
       'openvino-wsl': '-openvino',
       'rknn': '-rknn',
@@ -788,7 +788,7 @@ immich_machine_learning_container_additional_networks_custom: []
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:3003"), or empty string to not expose.
 # See immich_machine_learning_http_port
-immich_machine_learning_container_http_host_bind_port: ''
+immich_machine_learning_container_http_host_bind_port: ""
 
 # A list of additional "volumes" to mount in the container.
 # This list gets populated dynamically at runtime. You can provide a different default value,
@@ -860,7 +860,7 @@ immich_machine_learning_container_additional_volumes_default_openvino: |
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
-          'options': ''
+          'options': ""
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled
@@ -879,7 +879,7 @@ immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
-          'options': ''
+          'options': ""
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled
@@ -892,7 +892,7 @@ immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
           'type': 'bind',
           'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
           'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path,
-          'options': ''
+          'options': ""
         }
       ]
       if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_enabled
@@ -1278,7 +1278,7 @@ immich_machine_learning_environment_variable_machine_learning_cache_folder: /cac
 # Controls the MACHINE_LEARNING_REQUEST_THREADS environment variable for the machine-learning component
 # Thread count of the request thread pool (disabled if <= 0)
 # Default: number of CPU cores
-immich_machine_learning_environment_variable_machine_learning_request_threads: ''
+immich_machine_learning_environment_variable_machine_learning_request_threads: ""
 
 # Controls the MACHINE_LEARNING_MODEL_INTER_OP_THREADS environment variable for the machine-learning component
 # Number of parallel model operations
@@ -1307,19 +1307,19 @@ immich_machine_learning_environment_variable_machine_learning_worker_timeout: |-
 
 # Controls the MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL environment variable for the machine-learning component
 # Comma-separated list of (textual) CLIP model(s) to preload and cache
-immich_machine_learning_environment_variable_machine_learning_preload__clip__textual: ''
+immich_machine_learning_environment_variable_machine_learning_preload__clip__textual: ""
 
 # Controls the MACHINE_LEARNING_PRELOAD__CLIP__VISUAL environment variable for the machine-learning component
 # Comma-separated list of (visual) CLIP model(s) to preload and cache
-immich_machine_learning_environment_variable_machine_learning_preload__clip__visual: ''
+immich_machine_learning_environment_variable_machine_learning_preload__clip__visual: ""
 
 # Controls the MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION environment variable for the machine-learning component
 # Comma-separated list of (recognition) facial recognition model(s) to preload and cache
-immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__recognition: ''
+immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__recognition: ""
 
 # Controls the MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION environment variable for the machine-learning component
 # Comma-separated list of (detection) facial recognition model(s) to preload and cache
-immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__detection: ''
+immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__detection: ""
 
 # Controls the MACHINE_LEARNING_ANN_FP16_TURBO environment variable for the machine-learning component
 # Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN)
@@ -1367,7 +1367,7 @@ immich_machine_learning_environment_variable_machine_learning_rknn_threads: 1
 immich_machine_learning_environment_variable_mplconfigdir: /tmp/matplotlib
 
 # Additional environment variables for the machine-learning container
-immich_machine_learning_environment_variables_additional_variables: ''
+immich_machine_learning_environment_variables_additional_variables: ""
 
 ########################################################################
 #                                                                      #
