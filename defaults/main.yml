@@ -33,7 +33,7 @@ immich_scheme: https
 # The hostname at which Immich is served.
 immich_hostname: ""
 
-# The path at which Immich is exposed.
+# The path at which Immich is served.
 # This value must either be `/` or not end with a slash (e.g. `/immich`).
 #
 # Hosting Immich under a subpath does not seem to be possible due to Immich's technical limitations.
