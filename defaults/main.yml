@@ -543,11 +543,11 @@ immich_server_container_labels_traefik_additional_response_headers_custom: {}
 #
 # Example:
 # immich_server_container_labels_additional_labels_custom: |
-#   my.label=1
-#   another.label="here"
-immich_server_container_labels_additional_labels: "{{ immich_server_container_labels_additional_labels_auto | combine(immich_server_container_labels_additional_labels_custom) }}"
-immich_server_container_labels_additional_labels_auto: {}
-immich_server_container_labels_additional_labels_custom: {}
+#   - my.label=1
+#   - another.label="here"
+immich_server_container_labels_additional_labels: "{{ immich_server_container_labels_additional_labels_auto + immich_server_container_labels_additional_labels_custom }}"
+immich_server_container_labels_additional_labels_auto: []
+immich_server_container_labels_additional_labels_custom: []
 
 # Specifies how often the container health-check will run.
 #
