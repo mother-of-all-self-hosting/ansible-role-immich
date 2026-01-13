@@ -27,7 +27,7 @@ immich_version: v2.4.1
 immich_uid: ""
 immich_gid: ""
 
-# Specify URI scheme for Immich
+# The scheme used for serving Immich.
 immich_scheme: https
 
 # The hostname at which Immich is served.
@@ -158,7 +158,7 @@ immich_server_container_links_custom: []
 
 # Controls whether the container exposes its HTTP port (tcp/2283 in the container).
 #
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2283"), or empty string to not expose.
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
 # See immich_server_http_port
 immich_server_container_http_host_bind_port: ""
 
@@ -786,7 +786,7 @@ immich_machine_learning_container_additional_networks_custom: []
 
 # Controls whether the container exposes its HTTP port (tcp/3003 in the container).
 #
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:3003"), or empty string to not expose.
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
 # See immich_machine_learning_http_port
 immich_machine_learning_container_http_host_bind_port: ""
 
