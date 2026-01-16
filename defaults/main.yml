@@ -709,7 +709,7 @@ immich_machine_learning_cache_path: "{{ immich_machine_learning_base_path }}/cac
 # so we provide a separate directory for that.
 immich_machine_learning_dot_cache_path: "{{ immich_machine_learning_base_path }}/dot-cache"
 
-# See `immich_machine_learning_container_tmp_tmpfs_enabled`
+# See `immich_machine_learning_container_tmpfs_tmp_enabled`
 immich_machine_learning_tmp_path: "{{ immich_machine_learning_base_path }}/tmp"
 
 immich_machine_learning_version: "{{ immich_version }}{{ immich_machine_learning_version_hardware_acceleration_suffix }}"
@@ -770,8 +770,8 @@ immich_machine_learning_container_read_only_enabled: true
 
 # Controls whether /tmp should be a tmpfs.
 # If not enabled, /tmp will be persisted to disk (see `immich_machine_learning_tmp_path`).
-immich_machine_learning_container_tmp_tmpfs_enabled: "{{ immich_machine_learning_container_read_only_enabled }}"
-immich_machine_learning_container_tmp_tmpfs_size_mb: "{{ (ansible_memtotal_mb / 2) | round | int }}"
+immich_machine_learning_container_tmpfs_tmp_enabled: "{{ immich_machine_learning_container_read_only_enabled }}"
+immich_machine_learning_container_tmpfs_tmp_size: "{{ (ansible_memtotal_mb / 2) | round | int }}m"
 
 # The base container network for the machine-learning service. It will be auto-created by this role if it doesn't exist already.
 immich_machine_learning_container_network: "{{ immich_server_container_network }}"
@@ -1363,7 +1363,7 @@ immich_machine_learning_environment_variable_machine_learning_rknn_threads: 1
 # By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
 # but this path may not exist or may not be writable depending on the container's user (e.g. `immich_machine_learning_container_uid`).
 # It's better to set this to a path that is guaranteed to exist and to be writable.
-# See `immich_machine_learning_tmp_path` and `immich_machine_learning_container_tmp_tmpfs_enabled`.
+# See `immich_machine_learning_tmp_path` and `immich_machine_learning_container_tmpfs_tmp_enabled`.
 immich_machine_learning_environment_variable_mplconfigdir: /tmp/matplotlib
 
 # Additional environment variables for the machine-learning container

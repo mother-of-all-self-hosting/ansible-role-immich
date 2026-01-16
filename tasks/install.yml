@@ -29,10 +29,10 @@
     - path: "{{ immich_machine_learning_dot_cache_path }}"
       when: "{{ immich_machine_learning_enabled }}"
     - path: "{{ immich_machine_learning_tmp_path }}"
-      when: "{{ immich_machine_learning_enabled and not immich_machine_learning_container_tmp_tmpfs_enabled }}"
+      when: "{{ immich_machine_learning_enabled and not immich_machine_learning_container_tmpfs_tmp_enabled }}"
 
 - name: Ensure Immich tmp path removed if tmp-on-tmpfs enabled
-  when: immich_machine_learning_enabled and immich_machine_learning_container_tmp_tmpfs_enabled
+  when: immich_machine_learning_enabled and immich_machine_learning_container_tmpfs_tmp_enabled
   ansible.builtin.file:
     path: "{{ immich_machine_learning_tmp_path }}"
     state: absent

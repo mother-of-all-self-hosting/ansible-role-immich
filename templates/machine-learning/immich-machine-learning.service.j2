@@ -46,12 +46,12 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --read-only \
                 {% endif %}
                 --network={{ immich_machine_learning_container_network }} \
-                {% if immich_machine_learning_container_http_host_bind_port %}
+                {% if immich_machine_learning_qcontainer_http_host_bind_port %}
                 -p {{ immich_machine_learning_container_http_host_bind_port }}:{{ immich_machine_learning_http_port }} \
                 {% endif %}
                 --env-file={{ immich_machine_learning_base_path }}/env \
-                {% if immich_machine_learning_container_tmp_tmpfs_enabled %}
-                --tmpfs=/tmp:rw,noexec,nosuid,size={{ immich_machine_learning_container_tmp_tmpfs_size_mb }}m \
+                {% if immich_machine_learning_container_tmpfs_tmp_enabled %}
+                --tmpfs=/tmp:rw,noexec,nosuid,size={{ immich_machine_learning_container_tmpfs_tmp_size }} \
                 {% else %}
                 --mount type=bind,src={{ immich_machine_learning_tmp_path }},dst=/tmp \
                 {% endif %}
