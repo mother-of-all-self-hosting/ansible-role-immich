@@ -771,7 +771,7 @@ immich_machine_learning_container_read_only_enabled: true
 # Controls whether /tmp should be a tmpfs.
 # If not enabled, /tmp will be persisted to disk (see `immich_machine_learning_tmp_path`).
 immich_machine_learning_container_tmpfs_tmp_enabled: "{{ immich_machine_learning_container_read_only_enabled }}"
-immich_machine_learning_container_tmpfs_tmp_size: "{{ (ansible_memtotal_mb / 2) | round | int }}m"
+immich_machine_learning_container_tmpfs_tmp_size: "{{ (ansible_facts['memtotal_mb'] / 2) | round | int }}m"
 
 # The base container network for the machine-learning service. It will be auto-created by this role if it doesn't exist already.
 immich_machine_learning_container_network: "{{ immich_server_container_network }}"
