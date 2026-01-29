@@ -598,6 +598,13 @@ immich_server_environment_variable_immich_env: production
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/server/src/enum.ts#L414-L421
 immich_server_environment_variable_immich_log_level: log
 
+# Controls the IMMICH_ALLOW_SETUP environment variable for the server component.
+# Set to `false` to prevent the welcome/setup page from being shown on new installs,
+# which prevents anyone from signing up / registering as an admin.
+# This is useful if you have already initialized Immich and want to prevent
+# the setup page from appearing if the database is reset for any reason.
+immich_server_environment_variable_immich_allow_setup: true
+
 # Controls the DB_URL environment variable for the server component
 immich_server_environment_variable_db_url: |-
   {{
