@@ -610,7 +610,7 @@ immich_server_environment_variable_immich_allow_setup: true
 # Jinja's urlencode does not escape '/', so we replace it explicitly as %2F.
 immich_server_environment_variable_db_url: |-
   {{
-    ('postgresql://' + (immich_database_username | urlencode | replace('/', '%2F')) + ':' + (immich_database_password | urlencode | replace('/', '%2F')) + '@' + immich_database_hostname + ':' + immich_database_port | string + '/' + immich_database_name + '?sslmode=' + immich_database_sslmode)
+    ('postgresql://' + (immich_database_username | urlencode | replace('/', '%2F')) + ':' + (immich_database_password | urlencode | replace('/', '%2F')) + '@' + immich_database_hostname + ':' + (immich_database_port | string) + '/' + immich_database_name + '?sslmode=' + immich_database_sslmode)
     if (immich_database_username and immich_database_hostname)
     else ''
   }}
