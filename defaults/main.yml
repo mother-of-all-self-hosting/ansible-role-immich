@@ -606,7 +606,8 @@ immich_server_environment_variable_immich_log_level: log
 immich_server_environment_variable_immich_allow_setup: true
 
 # Controls the DB_URL environment variable for the server component
-# URL-encode DB credentials to avoid Invalid URL failures with reserved characters.
+# URL-encode DB credentials to avoid Invalid URL failures with reserved characters
+# (especially delimiters like ?, #, @, :, and / in userinfo).
 # Jinja's urlencode does not escape '/', so we replace it explicitly as %2F.
 immich_server_environment_variable_db_url: |-
   {{
