@@ -582,6 +582,37 @@ immich_server_systemd_wanted_services_list_default: |-
 immich_server_systemd_wanted_services_list_auto: []
 immich_server_systemd_wanted_services_list_custom: []
 
+# Controls how long to wait for the container to stop gracefully before killing it.
+immich_server_container_stop_grace_time_seconds: "{{ devture_systemd_docker_base_container_stop_grace_time_seconds }}"
+
+# Controls how long the pre-start cleanup should wait for stale container-name release
+# before failing startup explicitly.
+immich_server_container_cleanup_timeout_seconds: "{{ devture_systemd_docker_base_container_cleanup_timeout_seconds }}"
+
+# Controls the delay between pre-start cleanup retries.
+immich_server_container_cleanup_retry_delay_seconds: "{{ devture_systemd_docker_base_container_cleanup_retry_delay_seconds }}"
+
+# Shell command used in the systemd pre-start phase to deterministically remove a stale
+# container and wait until Docker releases its name.
+immich_server_container_cleanup_command: |
+  i=0;
+  while [ "$i" -lt {{ immich_server_container_cleanup_timeout_seconds }} ]; do
+  {{ devture_systemd_docker_base_host_command_docker }} stop -t {{ immich_server_container_stop_grace_time_seconds }} {{ immich_server_identifier }} >/dev/null 2>&1 || true;
+  {{ devture_systemd_docker_base_host_command_docker }} rm -f {{ immich_server_identifier }} >/dev/null 2>&1 || true;
+  if {{ devture_systemd_docker_base_host_command_docker }} container inspect {{ immich_server_identifier }} >/dev/null 2>&1; then
+  i=$((i + 1));
+  sleep {{ immich_server_container_cleanup_retry_delay_seconds }};
+  continue;
+  fi;
+  if {{ devture_systemd_docker_base_host_command_docker }} info >/dev/null 2>&1; then
+  exit 0;
+  fi;
+  echo "Failed to query Docker daemon while cleaning up {{ immich_server_identifier }}" >&2;
+  exit 1;
+  done;
+  echo "Failed to remove stale container {{ immich_server_identifier }} after {{ immich_server_container_cleanup_timeout_seconds }} attempts" >&2;
+  exit 1
+
 # Controls the TZ environment variable for the server component
 immich_server_environment_variable_tz: Etc/UTC
 
@@ -1256,6 +1287,37 @@ immich_machine_learning_systemd_required_services_list_custom: []
 
 # List of systemd services that the immich/server systemd service wants
 immich_machine_learning_systemd_wanted_services_list: []
+
+# Controls how long to wait for the container to stop gracefully before killing it.
+immich_machine_learning_container_stop_grace_time_seconds: "{{ devture_systemd_docker_base_container_stop_grace_time_seconds }}"
+
+# Controls how long the pre-start cleanup should wait for stale container-name release
+# before failing startup explicitly.
+immich_machine_learning_container_cleanup_timeout_seconds: "{{ devture_systemd_docker_base_container_cleanup_timeout_seconds }}"
+
+# Controls the delay between pre-start cleanup retries.
+immich_machine_learning_container_cleanup_retry_delay_seconds: "{{ devture_systemd_docker_base_container_cleanup_retry_delay_seconds }}"
+
+# Shell command used in the systemd pre-start phase to deterministically remove a stale
+# container and wait until Docker releases its name.
+immich_machine_learning_container_cleanup_command: |
+  i=0;
+  while [ "$i" -lt {{ immich_machine_learning_container_cleanup_timeout_seconds }} ]; do
+  {{ devture_systemd_docker_base_host_command_docker }} stop -t {{ immich_machine_learning_container_stop_grace_time_seconds }} {{ immich_machine_learning_identifier }} >/dev/null 2>&1 || true;
+  {{ devture_systemd_docker_base_host_command_docker }} rm -f {{ immich_machine_learning_identifier }} >/dev/null 2>&1 || true;
+  if {{ devture_systemd_docker_base_host_command_docker }} container inspect {{ immich_machine_learning_identifier }} >/dev/null 2>&1; then
+  i=$((i + 1));
+  sleep {{ immich_machine_learning_container_cleanup_retry_delay_seconds }};
+  continue;
+  fi;
+  if {{ devture_systemd_docker_base_host_command_docker }} info >/dev/null 2>&1; then
+  exit 0;
+  fi;
+  echo "Failed to query Docker daemon while cleaning up {{ immich_machine_learning_identifier }}" >&2;
+  exit 1;
+  done;
+  echo "Failed to remove stale container {{ immich_machine_learning_identifier }} after {{ immich_machine_learning_container_cleanup_timeout_seconds }} attempts" >&2;
+  exit 1
 
 # Controls the IMMICH_PORT environment variable for the machine-learning component
 immich_machine_learning_environment_variable_immich_port: "{{ immich_machine_learning_http_port }}"
