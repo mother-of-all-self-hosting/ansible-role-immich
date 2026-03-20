@@ -1414,9 +1414,9 @@ immich_machine_learning_environment_variable_machine_learning_max_batch_size__fa
     else ''
   }}
 
-# Controls the MACHINE_LEARNING_MAX_BATCH_SIZE__TEXT_RECOGNITION environment variable for the machine-learning component
-# Set the maximum number of boxes that will be processed at once by the facial recognition model
-immich_machine_learning_environment_variable_machine_learning_max_batch_size__text_recognition: 6
+# Controls the MACHINE_LEARNING_MAX_BATCH_SIZE__OCR environment variable for the machine-learning component
+# Set the maximum number of OCR text boxes that will be processed at once by the OCR recognition model
+immich_machine_learning_environment_variable_machine_learning_max_batch_size__ocr: 6
 
 # Controls the MACHINE_LEARNING_PING_TIMEOUT environment variable for the machine-learning component
 # How long (ms) to wait for a PING response when checking if an ML server is available

@@ -15,6 +15,7 @@
   with_items:
     - { "old": "immich_machine_learning_container_tmp_tmpfs_enabled", "new": "immich_machine_learning_container_tmpfs_tmp_enabled" }
     - { "old": "immich_machine_learning_container_tmp_tmpfs_size_mb", "new": "immich_machine_learning_container_tmpfs_tmp_size" }
+    - { "old": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__text_recognition", "new": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__ocr" }
 
 - name: Fail if required Immich settings not defined
   ansible.builtin.fail:
