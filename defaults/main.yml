@@ -46,8 +46,11 @@ immich_database_hostname: ""
 immich_database_port: 5432
 immich_database_username: immich
 immich_database_password: ""
+# Specify SSL mode for Postgres database server
+# By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
+# Valid values: see https://www.postgresql.org/docs/11/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
+immich_database_sslmode: disable
 immich_database_name: immich
-immich_database_sslmode: require
 
 immich_redis_url: ""
 immich_redis_socket: ""
