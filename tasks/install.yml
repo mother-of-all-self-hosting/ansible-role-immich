@@ -61,25 +61,20 @@
       dst: "{{ immich_machine_learning_base_path }}/env"
       when: "{{ immich_machine_learning_enabled }}"
 
-- name: Ensure Immich server container image is pulled via community.docker.docker_image_pull
-  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module' and immich_server_enabled | bool
+- name: Ensure Immich container images are pulled via community.docker.docker_image_pull
+  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module' and item.when
   community.docker.docker_image_pull:
-    name: "{{ immich_server_container_image }}"
+    name: "{{ item.image }}"
     pull: always
-  register: immich_server_container_image_pull_result
+  register: image_pull_result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: immich_server_container_image_pull_result is not failed
-
-- name: Ensure Immich machine learning container image is pulled via community.docker.docker_image_pull
-  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module' and immich_machine_learning_enabled | bool
-  community.docker.docker_image_pull:
-    name: "{{ immich_machine_learning_container_image }}"
-    pull: always
-  register: immich_machine_learning_container_image_pull_result
-  retries: "{{ devture_playbook_help_container_retries_count }}"
-  delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: immich_machine_learning_container_image_pull_result is not failed
+  until: image_pull_result is not failed
+  with_items:
+    - image: "{{ immich_server_container_image }}"
+      when: "{{ immich_server_enabled }}"
+    - image: "{{ immich_machine_learning_container_image }}"
+      when: "{{ immich_machine_learning_enabled }}"
 
 - name: Ensure Immich container images are pulled via command
   when: devture_systemd_docker_base_container_image_pull_method == 'command' and item.when
