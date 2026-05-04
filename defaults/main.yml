@@ -108,7 +108,6 @@ immich_server_container_image_tag: "{{ immich_server_version }}"
 immich_server_container_image_registry_prefix: "{{ immich_server_container_image_registry_prefix_upstream }}"
 immich_server_container_image_registry_prefix_upstream: "{{ immich_server_container_image_registry_prefix_upstream_default }}"
 immich_server_container_image_registry_prefix_upstream_default: ghcr.io/
-immich_server_container_image_force_pull: "{{ immich_server_container_image.endswith(':latest') }}"
 
 # Controls the user that the server container runs as. Set to `0` to run as root.
 immich_server_container_uid: "{{ immich_uid }}"
@@ -790,7 +789,6 @@ immich_machine_learning_container_image_tag: "{{ immich_machine_learning_version
 immich_machine_learning_container_image_registry_prefix: "{{ immich_machine_learning_container_image_registry_prefix_upstream }}"
 immich_machine_learning_container_image_registry_prefix_upstream: "{{ immich_machine_learning_container_image_registry_prefix_upstream_default }}"
 immich_machine_learning_container_image_registry_prefix_upstream_default: ghcr.io/
-immich_machine_learning_container_image_force_pull: "{{ immich_machine_learning_container_image.endswith(':latest') }}"
 
 # Controls the user that the machine-learning container runs as. Set to `0` to run as root.
 immich_machine_learning_container_uid: "{{ immich_uid }}"

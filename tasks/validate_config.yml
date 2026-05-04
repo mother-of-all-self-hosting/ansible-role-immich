@@ -16,6 +16,8 @@
     - { "old": "immich_machine_learning_container_tmp_tmpfs_enabled", "new": "immich_machine_learning_container_tmpfs_tmp_enabled" }
     - { "old": "immich_machine_learning_container_tmp_tmpfs_size_mb", "new": "immich_machine_learning_container_tmpfs_tmp_size" }
     - { "old": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__text_recognition", "new": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__ocr" }
+    - { "old": "immich_server_container_image_force_pull", "new": "removed (the new community.docker.docker_image_pull module handles this natively)" }
+    - { "old": "immich_machine_learning_container_image_force_pull", "new": "removed (the new community.docker.docker_image_pull module handles this natively)" }
 
 - name: Fail if required Immich settings not defined
   ansible.builtin.fail:
