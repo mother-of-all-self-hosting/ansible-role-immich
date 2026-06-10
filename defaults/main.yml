@@ -1439,6 +1439,18 @@ immich_machine_learning_environment_variable_machine_learning_rknn_threads: 1
 # See `immich_machine_learning_tmp_path` and `immich_machine_learning_container_tmpfs_tmp_enabled`.
 immich_machine_learning_environment_variable_mplconfigdir: /tmp/matplotlib
 
+# Controls the GUNICORN_CMD_ARGS environment variable for the machine-learning component —
+# a list of command-line arguments to pass to the gunicorn server which powers it.
+# Ref: https://docs.gunicorn.org/en/stable/settings.html
+immich_machine_learning_environment_variable_gunicorn_cmd_args: "{{ immich_machine_learning_environment_variable_gunicorn_cmd_args_default + immich_machine_learning_environment_variable_gunicorn_cmd_args_auto + immich_machine_learning_environment_variable_gunicorn_cmd_args_custom }}"
+
+# `--no-control-socket` (gunicorn >= v25.1.0, used by Immich >= v2.6.0) silences a harmless `Control server error` on startup:
+# the control socket (`/usr/src/gunicorn.ctl`) cannot be created on a read-only filesystem or by the non-root user this role uses.
+# Immich disables it upstream too (in releases newer than v2.7.5): https://github.com/immich-app/immich/pull/28239
+immich_machine_learning_environment_variable_gunicorn_cmd_args_default: ["--no-control-socket"]
+immich_machine_learning_environment_variable_gunicorn_cmd_args_auto: []
+immich_machine_learning_environment_variable_gunicorn_cmd_args_custom: []
+
 # Additional environment variables for the machine-learning container
 immich_machine_learning_environment_variables_additional_variables: ""
 
