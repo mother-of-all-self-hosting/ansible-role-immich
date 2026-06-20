@@ -712,7 +712,7 @@ immich_server_http_header_strict_transport_security: "max-age=31536000; includeS
 # - https://amifloced.org/
 #
 # Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
-# See: `immich_content_permission_policy`
+# See: `immich_http_header_permissions_policy`
 immich_server_floc_optout_enabled: true
 
 # Controls if HSTS preloading is enabled
