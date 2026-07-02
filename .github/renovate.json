@@ -19,8 +19,8 @@
       "enabled": true,
       "automerge": true,
       "automergeType": "branch",
-      "schedule": ["* 0-6 1 * *"],
-      "automergeSchedule": ["* 0-6 1 * *"]
+      "schedule": ["* * 1 */6 *"],
+      "automergeSchedule": ["* * 1-14 */6 *"]
     }
   ],
   "customManagers": [
