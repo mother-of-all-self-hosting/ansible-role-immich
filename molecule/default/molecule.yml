@@ -1,0 +1,122 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+    force: true
+driver:
+  name: docker
+platforms:
+  - name: immich-${MOLECULE_DISTRO:-ubuntu2604}-default
+    image: "geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2604}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callback_result_format: yaml
+  inventory:
+    group_vars:
+      all:
+        # Helper variables
+        immich_debug_service_enabled: false
+
+        # Variables for Immich
+        immich_uid: 1000
+        immich_gid: 1000
+        immich_hostname: localhost
+        immich_server_container_labels_traefik_enabled: false
+        immich_server_container_http_host_bind_port: 2283
+
+        # The machine-learning component is disabled: its large container
+        # image buys no signal in a boot/API smoke test (models are fetched
+        # lazily on first use anyway).
+        immich_machine_learning_enabled: false
+
+        # Variables required for Immich to connect to the Postgres database
+        immich_database_hostname: "{{ postgres_identifier }}"
+        immich_database_username: immich
+        immich_database_password: immich-molecule-password
+        immich_database_name: immich
+        immich_database_sslmode: disable
+
+        # Variables required for Immich to connect to the Valkey data-store
+        immich_redis_hostname: "{{ valkey_identifier }}"
+
+        immich_server_container_additional_networks_custom:
+          - "{{ postgres_container_network }}"
+          - "{{ valkey_container_network }}"
+        immich_server_systemd_required_services_list_custom:
+          - "{{ postgres_identifier }}.service"
+          - "{{ valkey_identifier }}.service"
+
+        # Variables for Postgres.
+        # Immich requires its own Postgres container image (with the vchord
+        # and pgvector extensions) instead of vanilla Postgres, configured as
+        # described in mash-playbook's docs/services/immich.md.
+        postgres_uid: 999
+        postgres_gid: 999
+        postgres_container_uid: 0
+        postgres_container_gid: 0
+        postgres_container_read_only_enabled: false
+        postgres_container_cap_drop_all_enabled: false
+        postgres_container_mount_etc_passwd_enabled: false
+        postgres_connection_password: postgres-molecule-password
+        postgres_container_image_registry_prefix_upstream_default: ghcr.io/
+        postgres_container_image_name: immich-app/postgres
+        postgres_container_image_suffix: ""
+        postgres_allowed_versions_custom: [18]
+        postgres_container_image_v18_version: 18-vectorchord0.5.3-pgvector0.8.1
+        postgres_initdb_args_list_custom:
+          - "--data-checksums"
+        postgres_postgres_process_extra_arguments_custom:
+          - "-c"
+          - "config_file=/etc/postgresql/postgresql.conf"
+        postgres_managed_databases: |
+          {{
+            [{
+              'name': immich_database_name,
+              'username': immich_database_username,
+              'password': immich_database_password,
+              'additional_sql_queries': [
+                '\c ' + immich_database_name,
+                'CREATE EXTENSION IF NOT EXISTS vchord CASCADE;',
+                'CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;',
+              ],
+            }]
+          }}
+
+        # Variables for Valkey
+        valkey_uid: 1000
+        valkey_gid: 1000
+        valkey_arch: amd64
+  env:
+    # Workaround for https://github.com/ansible/molecule/issues/4391
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
+scenario:
+  # See: https://docs.ansible.com/projects/molecule/configuration/?h=test_sequence#scenario
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    # Disable idempotence test for now due to ansible-role-postgres
+    # - idempotence
+    - side_effect
+    - verify
+    - cleanup
+    - destroy
+verifier:
+  name: ansible

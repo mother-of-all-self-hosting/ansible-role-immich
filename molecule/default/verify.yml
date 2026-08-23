@@ -1,0 +1,103 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Immich systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  vars_files:
+    # For immich_version, to compare against what the server reports
+    - "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+  tasks:
+    - name: Wait for Immich server service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: immich-server.service
+      register: immich_service
+      until: immich_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Immich server service is active
+      ansible.builtin.assert:
+        that: immich_service.status.ActiveState == 'active'
+        fail_msg: "immich-server.service not active ({{ immich_service.status.ActiveState }})"
+        success_msg: "immich-server.service is active"
+
+    - name: Retrieve Immich server service log for debugging
+      when: immich_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu immich-server.service
+      changed_when: false
+
+    # /api/server/ping only answers after the server finished its database
+    # migrations, so a pong transitively proves Postgres connectivity and that
+    # the vchord/pgvector extensions were set up (vanilla Postgres would fail
+    # right here).
+    - name: Wait for Immich server to answer the ping endpoint (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:2283/api/server/ping"
+        method: GET
+        return_content: true
+      register: immich_ping
+      until: immich_ping.status == 200 and immich_ping.json.res | default('') == 'pong'
+      retries: 120
+      delay: 5
+
+    - name: Query the Immich server version
+      ansible.builtin.uri:
+        url: "http://localhost:2283/api/server/version"
+        method: GET
+        return_content: true
+      register: immich_server_version
+
+    - name: Assert the Immich server version matches the role's version
+      ansible.builtin.assert:
+        that: >-
+          [immich_server_version.json.major, immich_server_version.json.minor, immich_server_version.json.patch]
+          | join('.') == immich_version | regex_replace('^v', '')
+        fail_msg: >-
+          Immich reports version {{ immich_server_version.json }}, while the role
+          installs {{ immich_version }}
+        success_msg: "Immich server reports version {{ immich_version }}"
+
+    # Creating the initial admin user and logging in exercises a real database
+    # write and the Valkey-backed session handling — broken REDIS_* wiring
+    # would pass the ping check but fail here.
+    - name: Create the initial Immich admin user
+      ansible.builtin.uri:
+        url: "http://localhost:2283/api/auth/admin-sign-up"
+        method: POST
+        body_format: json
+        body:
+          name: Molecule Admin
+          email: admin@example.com
+          password: Molecule-test-password1
+        status_code: [201]
+
+    - name: Log in to Immich as the admin user
+      ansible.builtin.uri:
+        url: "http://localhost:2283/api/auth/login"
+        method: POST
+        body_format: json
+        body:
+          email: admin@example.com
+          password: Molecule-test-password1
+        status_code: [200, 201]
+        return_content: true
+      register: immich_login
+
+    - name: Assert the Immich login yielded an access token
+      ansible.builtin.assert:
+        that: immich_login.json.accessToken | default('') | length > 0
+        fail_msg: "Immich login did not return an access token"
+        success_msg: "Immich login succeeded"
+
+    - name: Show Immich verification summary
+      ansible.builtin.debug:
+        msg:
+          - "Immich systemd: {{ immich_service.status.ActiveState }}"
+          - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
+          - "Immich version: {{ immich_server_version.json | default('n/a') }}"
+          - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
