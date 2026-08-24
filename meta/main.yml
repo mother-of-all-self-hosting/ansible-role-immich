@@ -3,7 +3,7 @@ galaxy_info:
   author: Slavi Pantaleev
   company: Devture Ltd
   role_name: immich
-  namespace: devture
+  namespace: mash
   description: Ansible role to install an Immich instance
   platforms:
     - name: Debian
