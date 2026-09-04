@@ -94,10 +94,10 @@
         fail_msg: "Immich login did not return an access token"
         success_msg: "Immich login succeeded"
 
-    - name: Show Immich verification summary
+    - name: Show the Immich verification summary
       ansible.builtin.debug:
         msg:
           - "Immich systemd: {{ immich_service.status.ActiveState }}"
-          - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
           - "Immich version: {{ immich_server_version.json | default('n/a') }}"
+          - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
           - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
