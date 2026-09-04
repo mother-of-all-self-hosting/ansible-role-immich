@@ -54,15 +54,13 @@
         return_content: true
       register: immich_server_version
 
-    - name: Assert the Immich server version matches the role's version
+    - name: Assert the running Immich is the version this role installs
       ansible.builtin.assert:
         that: >-
           [immich_server_version.json.major, immich_server_version.json.minor, immich_server_version.json.patch]
           | join('.') == immich_version | regex_replace('^v', '')
-        fail_msg: >-
-          Immich reports version {{ immich_server_version.json }}, while the role
-          installs {{ immich_version }}
-        success_msg: "Immich server reports version {{ immich_version }}"
+        fail_msg: "Immich reports {{ immich_server_version.json | default('none') }}, expected {{ immich_version }}"
+        success_msg: "Immich reports {{ immich_server_version.json }}"
 
     # Creating the initial admin user and logging in exercises a real database
     # write and the Valkey-backed session handling — broken REDIS_* wiring
