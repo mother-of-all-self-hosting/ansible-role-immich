@@ -9,10 +9,15 @@
   hosts: all
   become: true
   gather_facts: false
-  vars_files:
-    # For immich_version, to compare against what the server reports
-    - "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
   tasks:
+    # The role is not included in this playbook, so its defaults are not in
+    # scope. Reading defaults/main.yml directly ties the version assertion
+    # below.
+    - name: Load the role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: immich_defaults
+
     - name: Wait for Immich server service to become active (up to 180s)
       ansible.builtin.systemd:
         name: immich-server.service
@@ -58,8 +63,8 @@
       ansible.builtin.assert:
         that: >-
           [immich_server_version.json.major, immich_server_version.json.minor, immich_server_version.json.patch]
-          | join('.') == immich_version | regex_replace('^v', '')
-        fail_msg: "Immich reports {{ immich_server_version.json | default('none') }}, expected {{ immich_version }}"
+          | join('.') == immich_defaults.immich_version | regex_replace('^v', '')
+        fail_msg: "Immich reports {{ immich_server_version.json | default('none') }}, expected {{ immich_defaults.immich_version }}"
         success_msg: "Immich reports {{ immich_server_version.json }}"
 
     # Creating the initial admin user and logging in exercises a real database
