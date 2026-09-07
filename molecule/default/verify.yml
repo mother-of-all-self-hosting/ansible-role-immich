@@ -18,21 +18,27 @@
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
         name: immich_defaults
 
-    - name: Wait for Immich server service to become active (up to 180s)
-      ansible.builtin.systemd:
+    - name: Wait for the Immich server systemd service to become active (up to 180s)
+      ansible.builtin.systemd_service:
         name: immich-server.service
       register: immich_service
       until: immich_service.status.ActiveState == 'active'
       retries: 36
       delay: 5
+      # So that giving up is reported by the assertion below rather than as a
+      # wall of systemd unit properties.
+      failed_when: false
 
-    - name: Assert Immich server service is active
+    # `Restart=always` in the systemd unit means that even a container which crashes
+    # and gets restarted reads as active here, so this is a precondition rather than
+    # a result.
+    - name: Assert the Immich server systemd service is active
       ansible.builtin.assert:
         that: immich_service.status.ActiveState == 'active'
-        fail_msg: "immich-server.service not active ({{ immich_service.status.ActiveState }})"
+        fail_msg: "immich-server.service is not active ({{ immich_service.status.ActiveState }})"
         success_msg: "immich-server.service is active"
 
-    - name: Retrieve Immich server service log for debugging
+    - name: Retrieve the Immich server systemd service log for debugging
       when: immich_debug_service_enabled | bool
       ansible.builtin.command:
         cmd: journalctl -xeu immich-server.service
