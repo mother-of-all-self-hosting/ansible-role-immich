@@ -52,7 +52,7 @@
       retries: 120
       delay: 5
 
-    - name: Query the Immich server version
+    - name: Query the version of the running Immich server
       ansible.builtin.uri:
         url: "http://localhost:2283/api/server/version"
         method: GET
