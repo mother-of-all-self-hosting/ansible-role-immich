@@ -41,7 +41,7 @@
     - name: Retrieve the Immich server systemd service log for debugging
       when: immich_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu immich-server.service
+        cmd: journalctl --no-pager --output=cat --unit=immich-server.service
       changed_when: false
 
     # /api/server/ping only answers after the server finished its database
