@@ -12,108 +12,108 @@
   tasks:
     - name: Verify that Immich works
       block:
-    # The role is not included in this playbook, so its defaults are not in
-    # scope. Reading defaults/main.yml directly ties the version assertion
-    # below.
-    - name: Load the role defaults
-      ansible.builtin.include_vars:
-        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
-        name: immich_defaults
+        # The role is not included in this playbook, so its defaults are not in
+        # scope. Reading defaults/main.yml directly ties the version assertion
+        # below.
+        - name: Load the role defaults
+          ansible.builtin.include_vars:
+            file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+            name: immich_defaults
 
-    - name: Wait for the Immich server systemd service to become active (up to 180s)
-      ansible.builtin.systemd_service:
-        name: immich-server.service
-      register: immich_service
-      until: immich_service.status.ActiveState == 'active'
-      retries: 36
-      delay: 5
-      # So that giving up is reported by the assertion below rather than as a
-      # wall of systemd unit properties.
-      failed_when: false
+        - name: Wait for the Immich server systemd service to become active (up to 180s)
+          ansible.builtin.systemd_service:
+            name: immich-server.service
+          register: immich_service
+          until: immich_service.status.ActiveState == 'active'
+          retries: 36
+          delay: 5
+          # So that giving up is reported by the assertion below rather than as a
+          # wall of systemd unit properties.
+          failed_when: false
 
-    # `Restart=always` in the systemd unit means that even a container which crashes
-    # and gets restarted reads as active here, so this is a precondition rather than
-    # a result.
-    - name: Assert the Immich server systemd service is active
-      ansible.builtin.assert:
-        that: immich_service.status.ActiveState == 'active'
-        fail_msg: "immich-server.service is not active ({{ immich_service.status.ActiveState }})"
-        success_msg: "immich-server.service is active"
+        # `Restart=always` in the systemd unit means that even a container which crashes
+        # and gets restarted reads as active here, so this is a precondition rather than
+        # a result.
+        - name: Assert the Immich server systemd service is active
+          ansible.builtin.assert:
+            that: immich_service.status.ActiveState == 'active'
+            fail_msg: "immich-server.service is not active ({{ immich_service.status.ActiveState }})"
+            success_msg: "immich-server.service is active"
 
-    - name: Retrieve the Immich server systemd service log for debugging
-      when: immich_debug_service_enabled | bool
-      ansible.builtin.command:
-        cmd: journalctl --no-pager --output=cat --unit=immich-server.service
-      changed_when: false
+        - name: Retrieve the Immich server systemd service log for debugging
+          when: immich_debug_service_enabled | bool
+          ansible.builtin.command:
+            cmd: journalctl --no-pager --output=cat --unit=immich-server.service
+          changed_when: false
 
-    # /api/server/ping only answers after the server finished its database
-    # migrations, so a pong transitively proves Postgres connectivity and that
-    # the vchord/pgvector extensions were set up (vanilla Postgres would fail
-    # right here).
-    - name: Wait for Immich server to answer the ping endpoint (up to 10m)
-      ansible.builtin.uri:
-        url: "http://localhost:2283/api/server/ping"
-        method: GET
-        return_content: true
-      register: immich_ping
-      until: immich_ping.status == 200 and immich_ping.json.res | default('') == 'pong'
-      retries: 120
-      delay: 5
+        # /api/server/ping only answers after the server finished its database
+        # migrations, so a pong transitively proves Postgres connectivity and that
+        # the vchord/pgvector extensions were set up (vanilla Postgres would fail
+        # right here).
+        - name: Wait for Immich server to answer the ping endpoint (up to 10m)
+          ansible.builtin.uri:
+            url: "http://localhost:2283/api/server/ping"
+            method: GET
+            return_content: true
+          register: immich_ping
+          until: immich_ping.status == 200 and immich_ping.json.res | default('') == 'pong'
+          retries: 120
+          delay: 5
 
-    - name: Query the version of the running Immich server
-      ansible.builtin.uri:
-        url: "http://localhost:2283/api/server/version"
-        method: GET
-        return_content: true
-      register: immich_server_version
+        - name: Query the version of the running Immich server
+          ansible.builtin.uri:
+            url: "http://localhost:2283/api/server/version"
+            method: GET
+            return_content: true
+          register: immich_server_version
 
-    - name: Assert the running Immich is the version this role installs
-      ansible.builtin.assert:
-        that: >-
-          [immich_server_version.json.major, immich_server_version.json.minor, immich_server_version.json.patch]
-          | join('.') == immich_defaults.immich_version | regex_replace('^v', '')
-        fail_msg: "Immich reports {{ immich_server_version.json | default('none') }}, expected {{ immich_defaults.immich_version }}"
-        success_msg: "Immich reports {{ immich_server_version.json }}"
+        - name: Assert the running Immich is the version this role installs
+          ansible.builtin.assert:
+            that: >-
+              [immich_server_version.json.major, immich_server_version.json.minor, immich_server_version.json.patch]
+              | join('.') == immich_defaults.immich_version | regex_replace('^v', '')
+            fail_msg: "Immich reports {{ immich_server_version.json | default('none') }}, expected {{ immich_defaults.immich_version }}"
+            success_msg: "Immich reports {{ immich_server_version.json }}"
 
-    # Creating the initial admin user and logging in exercises a real database
-    # write and the Valkey-backed session handling — broken REDIS_* wiring
-    # would pass the ping check but fail here.
-    - name: Create the initial Immich admin user
-      ansible.builtin.uri:
-        url: "http://localhost:2283/api/auth/admin-sign-up"
-        method: POST
-        body_format: json
-        body:
-          name: Molecule Admin
-          email: admin@example.com
-          password: Molecule-test-password1
-        status_code: [201]
+        # Creating the initial admin user and logging in exercises a real database
+        # write and the Valkey-backed session handling — broken REDIS_* wiring
+        # would pass the ping check but fail here.
+        - name: Create the initial Immich admin user
+          ansible.builtin.uri:
+            url: "http://localhost:2283/api/auth/admin-sign-up"
+            method: POST
+            body_format: json
+            body:
+              name: Molecule Admin
+              email: admin@example.com
+              password: Molecule-test-password1
+            status_code: [201]
 
-    - name: Log in to Immich as the admin user
-      ansible.builtin.uri:
-        url: "http://localhost:2283/api/auth/login"
-        method: POST
-        body_format: json
-        body:
-          email: admin@example.com
-          password: Molecule-test-password1
-        status_code: [200, 201]
-        return_content: true
-      register: immich_login
+        - name: Log in to Immich as the admin user
+          ansible.builtin.uri:
+            url: "http://localhost:2283/api/auth/login"
+            method: POST
+            body_format: json
+            body:
+              email: admin@example.com
+              password: Molecule-test-password1
+            status_code: [200, 201]
+            return_content: true
+          register: immich_login
 
-    - name: Assert the Immich login yielded an access token
-      ansible.builtin.assert:
-        that: immich_login.json.accessToken | default('') | length > 0
-        fail_msg: "Immich login did not return an access token"
-        success_msg: "Immich login succeeded"
+        - name: Assert the Immich login yielded an access token
+          ansible.builtin.assert:
+            that: immich_login.json.accessToken | default('') | length > 0
+            fail_msg: "Immich login did not return an access token"
+            success_msg: "Immich login succeeded"
 
-    - name: Show the Immich verification summary
-      ansible.builtin.debug:
-        msg:
-          - "Immich systemd: {{ immich_service.status.ActiveState }}"
-          - "Immich version: {{ immich_server_version.json | default('n/a') }}"
-          - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
-          - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
+        - name: Show the Immich verification summary
+          ansible.builtin.debug:
+            msg:
+              - "Immich systemd: {{ immich_service.status.ActiveState }}"
+              - "Immich version: {{ immich_server_version.json | default('n/a') }}"
+              - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
+              - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
 
       rescue:
         # Whatever went wrong, the reason is almost always in the systemd service log.
