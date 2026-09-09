@@ -10,6 +10,8 @@
   become: true
   gather_facts: false
   tasks:
+    - name: Verify that Immich works
+      block:
     # The role is not included in this playbook, so its defaults are not in
     # scope. Reading defaults/main.yml directly ties the version assertion
     # below.
@@ -112,3 +114,19 @@
           - "Immich version: {{ immich_server_version.json | default('n/a') }}"
           - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
           - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
+
+      rescue:
+        # Whatever went wrong, the reason is almost always in the systemd service log.
+        - name: Retrieve the Immich systemd service log
+          ansible.builtin.command:
+            cmd: journalctl --no-pager --output=cat --unit=immich-server.service
+          register: immich_service_log
+          changed_when: false
+
+        - name: Show the Immich systemd service log
+          ansible.builtin.debug:
+            var: immich_service_log.stdout_lines
+
+        - name: Fail because verification did not pass
+          ansible.builtin.fail:
+            msg: "Immich verification failed. The systemd service log is printed above."
