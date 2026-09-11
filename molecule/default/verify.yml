@@ -9,6 +9,13 @@
   hosts: all
   become: true
   gather_facts: false
+
+  vars:
+    immich_verify_units:
+      - immich-server.service
+      - postgres.service
+      - valkey.service
+
   tasks:
     - name: Verify that Immich works
       block:
@@ -20,13 +27,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: immich_defaults
 
-        - name: Wait for the Immich server systemd service to become active (up to 180s)
+        - name: Wait for the Immich systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: immich-server.service
-          register: immich_service
-          until: immich_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: immich_services
+          until: immich_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ immich_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -34,17 +42,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Immich server systemd service is active
+        - name: Assert the Immich systemd services are active
           ansible.builtin.assert:
-            that: immich_service.status.ActiveState == 'active'
-            fail_msg: "immich-server.service is not active ({{ immich_service.status.ActiveState }})"
-            success_msg: "immich-server.service is active"
+            that: immich_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(immich_verify_units | zip(immich_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Immich server systemd service log for debugging
+        - name: Retrieve the Immich systemd services log for debugging
           when: immich_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=immich-server.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ immich_verify_units }}"
 
         # /api/server/ping only answers after the server finished its database
         # migrations, so a pong transitively proves Postgres connectivity and that
@@ -110,7 +121,7 @@
         - name: Show the Immich verification summary
           ansible.builtin.debug:
             msg:
-              - "Immich systemd: {{ immich_service.status.ActiveState }}"
+              - "Immich systemd: {% for unit, state in immich_verify_units | zip(immich_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Immich version: {{ immich_server_version.json | default('n/a') }}"
               - "Immich ping: {{ immich_ping.json.res | default('n/a') }}"
               - "Immich admin login: {{ 'ok' if immich_login.json.accessToken | default('') | length > 0 else 'failed' }}"
