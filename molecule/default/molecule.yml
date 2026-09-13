@@ -31,6 +31,7 @@ provisioner:
       all:
         # Helper variables
         immich_debug_service_enabled: false
+        immich_restarts_check_enabled: true
 
         # Variables for Immich
         immich_uid: 1000
