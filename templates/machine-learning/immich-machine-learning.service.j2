@@ -74,7 +74,10 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 {% if immich_machine_learning_container_extra_arguments | length > 0 %}
                 {{ immich_machine_learning_container_extra_arguments | join(' ') }} \
                 {% endif %}
-                {{ immich_machine_learning_container_image }}
+                {{ immich_machine_learning_container_image }} \
+                {% for arg in immich_machine_learning_process_extra_arguments %}
+                {{ arg }} \
+                {% endfor %}
 
 {% for network in immich_machine_learning_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ immich_machine_learning_identifier }}

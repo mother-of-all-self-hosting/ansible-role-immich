@@ -567,6 +567,12 @@ immich_server_container_extra_arguments: "{{ immich_server_container_extra_argum
 immich_server_container_extra_arguments_auto: []
 immich_server_container_extra_arguments_custom: []
 
+# A list of extra arguments to pass to the process inside the container
+# Example: ['--SOME_ARGUMENT']
+immich_server_process_extra_arguments: "{{ immich_server_process_extra_arguments_auto + immich_server_process_extra_arguments_custom }}"
+immich_server_process_extra_arguments_auto: []
+immich_server_process_extra_arguments_custom: []
+
 # List of systemd services that the immich/server systemd service depends on
 immich_server_systemd_required_services_list: "{{ immich_server_systemd_required_services_list_default + immich_server_systemd_required_services_list_auto + immich_server_systemd_required_services_list_custom }}"
 immich_server_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
@@ -1279,6 +1285,12 @@ immich_machine_learning_container_group_add_custom: []
 immich_machine_learning_container_extra_arguments: "{{ immich_machine_learning_container_extra_arguments_auto + immich_machine_learning_container_extra_arguments_custom }}"
 immich_machine_learning_container_extra_arguments_auto: []
 immich_machine_learning_container_extra_arguments_custom: []
+
+# A list of extra arguments to pass to the process inside the container
+# Example: ['--SOME_ARGUMENT']
+immich_machine_learning_process_extra_arguments: "{{ immich_machine_learning_process_extra_arguments_auto + immich_machine_learning_process_extra_arguments_custom }}"
+immich_machine_learning_process_extra_arguments_auto: []
+immich_machine_learning_process_extra_arguments_custom: []
 
 # List of systemd services that the immich/server systemd service depends on
 immich_machine_learning_systemd_required_services_list: "{{ immich_machine_learning_systemd_required_services_list_default + immich_machine_learning_systemd_required_services_list_auto + immich_machine_learning_systemd_required_services_list_custom }}"
