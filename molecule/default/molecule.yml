@@ -81,7 +81,7 @@ provisioner:
         postgres_container_image_v18_version: 18-vectorchord0.5.3-pgvector0.8.1
         postgres_initdb_args_list_custom:
           - "--data-checksums"
-        postgres_postgres_process_extra_arguments_custom:
+        postgres_process_extra_arguments_custom:
           - "-c"
           - "config_file=/etc/postgresql/postgresql.conf"
         postgres_managed_databases: |
