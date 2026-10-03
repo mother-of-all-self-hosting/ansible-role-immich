@@ -103,6 +103,9 @@ provisioner:
         valkey_gid: 1000
         valkey_arch: amd64
   env:
+    # Removing the instance means deleting the inner Docker's vfs-backed images
+    # (several GB), which can exceed the Docker client's default 60s timeout.
+    DOCKER_TIMEOUT: "300"
     # Workaround for https://github.com/ansible/molecule/issues/4391
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
 scenario:
