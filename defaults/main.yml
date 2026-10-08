@@ -1390,6 +1390,11 @@ immich_machine_learning_environment_variable_machine_learning_availability_backo
 # How many threads of RKNN runtime should be spinned up while inferencing
 immich_machine_learning_environment_variable_machine_learning_rknn_threads: 1
 
+# Controls the MACHINE_LEARNING_MODEL_REVISION environment variable for the machine-learning component
+# Set to `v2` to use the newer, more optimized models (faster, less memory, numerically equivalent outputs — no need to re-run jobs).
+# Upstream plans to make `v2` the default in a later release.
+immich_machine_learning_environment_variable_machine_learning_model_revision: main
+
 # Controls the MPLCONFIGDIR environment variable for the machine-learning component.
 # This is used by Matplotlib to store its data.
 # By default (if the environment variable is not set), it appears to try `~/.config/matplotlib` first,
