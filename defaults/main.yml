@@ -1358,6 +1358,18 @@ immich_machine_learning_environment_variable_machine_learning_preload__facial_re
 # Comma-separated list of (detection) facial recognition model(s) to preload and cache
 immich_machine_learning_environment_variable_machine_learning_preload__facial_recognition__detection: ""
 
+# Controls the MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION environment variable for the machine-learning component
+# Comma-separated list of (recognition) OCR model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__ocr__recognition: ""
+
+# Controls the MACHINE_LEARNING_PRELOAD__OCR__DETECTION environment variable for the machine-learning component
+# Comma-separated list of (detection) OCR model(s) to preload and cache
+immich_machine_learning_environment_variable_machine_learning_preload__ocr__detection: ""
+
+# Controls the MACHINE_LEARNING_PRELOAD__OCR__MAX_RESOLUTION environment variable for the machine-learning component
+# Resolution to preload the OCR detection model(s) for (must match the server's OCR resolution, or the preloaded model will not be used)
+immich_machine_learning_environment_variable_machine_learning_preload__ocr__max_resolution: 736
+
 # Controls the MACHINE_LEARNING_ANN_FP16_TURBO environment variable for the machine-learning component
 # Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN)
 immich_machine_learning_environment_variable_machine_learning_ann_fp16_turbo: false
