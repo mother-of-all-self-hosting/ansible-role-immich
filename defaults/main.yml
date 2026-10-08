@@ -1338,12 +1338,9 @@ immich_machine_learning_environment_variable_machine_learning_http_keepalive_tim
 
 # Controls the MACHINE_LEARNING_WORKER_TIMEOUT environment variable for the machine-learning component
 # Maximum time (s) of unresponsiveness before a worker is killed
-# Default: 120 (300 if using OpenVINO)
-immich_machine_learning_environment_variable_machine_learning_worker_timeout: |-
-  {{
-    300 if immich_machine_learning_hardware_acceleration == 'openvino' or immich_machine_learning_hardware_acceleration == 'openvino-wsl'
-    else 120
-  }}
+# Default: 300 (900 if using ROCm)
+# Ref: https://github.com/immich-app/immich/blob/e3b165609135365302e40a43d94967fdbb2e6888/machine-learning/immich_ml/config.py#L46-L47
+immich_machine_learning_environment_variable_machine_learning_worker_timeout: "{{ 900 if immich_machine_learning_hardware_acceleration == 'rocm' else 300 }}"
 
 # Controls the MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL environment variable for the machine-learning component
 # Comma-separated list of (textual) CLIP model(s) to preload and cache
