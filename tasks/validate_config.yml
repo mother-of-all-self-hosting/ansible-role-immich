@@ -22,6 +22,8 @@
     - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_usb_path", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
     - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
     - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
+    - { "old": "immich_machine_learning_container_devices_default_openvino_wsl_dri_enabled", "new": "<removed> (upstream no longer passes /dev/dri to the OpenVINO WSL container)" }
+    - { "old": "immich_machine_learning_container_devices_default_openvino_wsl_dri_path", "new": "<removed> (upstream no longer passes /dev/dri to the OpenVINO WSL container)" }
 
 - name: Fail if required Immich settings not defined
   ansible.builtin.fail:

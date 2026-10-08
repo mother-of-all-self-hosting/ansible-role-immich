@@ -991,21 +991,9 @@ immich_machine_learning_container_devices_default_openvino: |-
 immich_machine_learning_container_devices_default_openvino_dri_enabled: true
 immich_machine_learning_container_devices_default_openvino_dri_path: /dev/dri
 
-# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L52-L54
+# Ref: https://github.com/immich-app/immich/blob/e3b165609135365302e40a43d94967fdbb2e6888/docker/hwaccel.ml.yml#L48-L49
 immich_machine_learning_container_devices_default_openvino_wsl: |-
   {{
-    (
-      [
-        {
-          'src': immich_machine_learning_container_devices_default_openvino_wsl_dri_path,
-          'dst': immich_machine_learning_container_devices_default_openvino_wsl_dri_path,
-          'options': 'rwm'
-        }
-      ]
-      if immich_machine_learning_container_devices_default_openvino_wsl_dri_enabled
-      else []
-    )
-    +
     (
       [
         {
@@ -1018,8 +1006,6 @@ immich_machine_learning_container_devices_default_openvino_wsl: |-
       else []
     )
   }}
-immich_machine_learning_container_devices_default_openvino_wsl_dri_enabled: true
-immich_machine_learning_container_devices_default_openvino_wsl_dri_path: /dev/dri
 immich_machine_learning_container_devices_default_openvino_wsl_dxg_enabled: true
 immich_machine_learning_container_devices_default_openvino_wsl_dxg_path: /dev/dxg
 
