@@ -899,41 +899,12 @@ immich_machine_learning_container_additional_volumes_default_cuda: []
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
 immich_machine_learning_container_additional_volumes_default_cpu: []
 
-# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L48-L49
-immich_machine_learning_container_additional_volumes_default_openvino: |
-  {{
-    (
-      [
-        {
-          'type': 'bind',
-          'src': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
-          'dst': immich_machine_learning_container_additional_volumes_default_openvino_usb_path,
-          'options': ""
-        }
-      ]
-      if immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled
-      else []
-    )
-  }}
-immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled: true
-immich_machine_learning_container_additional_volumes_default_openvino_usb_path: /dev/bus/usb
+# Ref: https://github.com/immich-app/immich/blob/e3b165609135365302e40a43d94967fdbb2e6888/docker/hwaccel.ml.yml#L43-L45
+immich_machine_learning_container_additional_volumes_default_openvino: []
 
-# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L55-L57
+# Ref: https://github.com/immich-app/immich/blob/e3b165609135365302e40a43d94967fdbb2e6888/docker/hwaccel.ml.yml#L50-L51
 immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
   {{
-    (
-      [
-        {
-          'type': 'bind',
-          'src': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
-          'dst': immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path,
-          'options': ""
-        }
-      ]
-      if immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled
-      else []
-    )
-    +
     (
       [
         {
@@ -947,8 +918,6 @@ immich_machine_learning_container_additional_volumes_default_openvino_wsl: |-
       else []
     )
   }}
-immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled: true
-immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path: /dev/bus/usb
 immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_enabled: true
 immich_machine_learning_container_additional_volumes_default_openvino_wsl_usr_lib_wsl_path: /usr/lib/wsl
 
@@ -1135,8 +1104,8 @@ immich_machine_learning_container_device_cgroup_rules_default_cuda: []
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L24
 immich_machine_learning_container_device_cgroup_rules_default_cpu: []
 
-# Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L44-L45
-immich_machine_learning_container_device_cgroup_rules_default_openvino: ["c 189:* rmw"]
+# Ref: https://github.com/immich-app/immich/blob/e3b165609135365302e40a43d94967fdbb2e6888/docker/hwaccel.ml.yml#L43-L45
+immich_machine_learning_container_device_cgroup_rules_default_openvino: []
 
 # Ref: https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.ml.yml#L51
 immich_machine_learning_container_device_cgroup_rules_default_openvino_wsl: []

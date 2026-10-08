@@ -18,6 +18,10 @@
     - { "old": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__text_recognition", "new": "immich_machine_learning_environment_variable_machine_learning_max_batch_size__ocr" }
     - { "old": "immich_server_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
     - { "old": "immich_machine_learning_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
+    - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_usb_enabled", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
+    - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_usb_path", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
+    - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_enabled", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
+    - { "old": "immich_machine_learning_container_additional_volumes_default_openvino_wsl_usb_path", "new": "<removed> (upstream no longer passes USB devices to the OpenVINO container)" }
 
 - name: Fail if required Immich settings not defined
   ansible.builtin.fail:
