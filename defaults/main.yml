@@ -1372,12 +1372,7 @@ immich_machine_learning_environment_variable_machine_learning_device_ids: '0'
 
 # Controls the MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION environment variable for the machine-learning component
 # Set the maximum number of faces that will be processed at once by the facial recognition model
-# Default: None (1 if using OpenVINO)
-immich_machine_learning_environment_variable_machine_learning_max_batch_size__facial_recognition: |-
-  {{
-    '1' if immich_machine_learning_hardware_acceleration in ['openvino', 'openvino-wsl']
-    else ''
-  }}
+immich_machine_learning_environment_variable_machine_learning_max_batch_size__facial_recognition: 4
 
 # Controls the MACHINE_LEARNING_MAX_BATCH_SIZE__OCR environment variable for the machine-learning component
 # Set the maximum number of OCR text boxes that will be processed at once by the OCR recognition model
