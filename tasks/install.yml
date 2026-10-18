@@ -54,42 +54,50 @@
     - src: templates/server/env.j2
       dst: "{{ immich_server_base_path }}/env"
       when: "{{ immich_server_enabled }}"
+      component: server
     - src: templates/server/labels.j2
       dst: "{{ immich_server_base_path }}/labels"
       when: "{{ immich_server_enabled }}"
+      component: server
     - src: templates/machine-learning/env.j2
       dst: "{{ immich_machine_learning_base_path }}/env"
       when: "{{ immich_machine_learning_enabled }}"
+      component: machine_learning
+  register: immich_support_files_result
 
 - name: Ensure Immich container images are pulled via community.docker.docker_image_pull
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module' and item.when
   community.docker.docker_image_pull:
     name: "{{ item.image }}"
     pull: always
-  register: image_pull_result
+  register: immich_container_image_pull_result_ansible_module
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: image_pull_result is not failed
+  until: immich_container_image_pull_result_ansible_module is not failed
   with_items:
     - image: "{{ immich_server_container_image }}"
       when: "{{ immich_server_enabled }}"
+      component: server
     - image: "{{ immich_machine_learning_container_image }}"
       when: "{{ immich_machine_learning_enabled }}"
+      component: machine_learning
 
 - name: Ensure Immich container images are pulled via command
   when: devture_systemd_docker_base_container_image_pull_method == 'command' and item.when
   ansible.builtin.command:
     cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ item.image }}"
-  register: image_pull_result
+  register: immich_container_image_pull_result_command
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: image_pull_result is not failed
-  changed_when: "'Downloaded newer image' in image_pull_result.stdout"
+  until: immich_container_image_pull_result_command is not failed
+  changed_when: "'Downloaded newer image' in immich_container_image_pull_result_command.stdout"
   with_items:
     - image: "{{ immich_server_container_image }}"
       when: "{{ immich_server_enabled }}"
+      component: server
     - image: "{{ immich_machine_learning_container_image }}"
       when: "{{ immich_machine_learning_enabled }}"
+      component: machine_learning
 
 - name: Ensure Immich container networks are created via community.docker.docker_network
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
@@ -98,6 +106,7 @@
     name: "{{ item }}"
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
+  register: immich_network_creation_result_ansible_module
   with_items: "{{ immich_container_networks }}"
 
 - name: Ensure Immich container networks are created via ansible.builtin.command
@@ -108,9 +117,9 @@
       {% if devture_systemd_docker_base_ipv6_enabled %}--ipv6{% endif %}
       {{ devture_systemd_docker_base_container_networks_driver_options_string }}
       {{ item }}
-  register: network_creation_result
-  changed_when: network_creation_result.rc == 0
-  failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
+  register: immich_network_creation_result_command
+  changed_when: immich_network_creation_result_command.rc == 0
+  failed_when: immich_network_creation_result_command.rc != 0 and 'already exists' not in immich_network_creation_result_command.stderr
   with_items: "{{ immich_container_networks }}"
 
 - name: Ensure Immich systemd services are present
@@ -123,6 +132,39 @@
     - src: "{{ role_path }}/templates/server/immich-server.service.j2"
       dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
       when: "{{ immich_server_enabled }}"
+      component: server
     - src: "{{ role_path }}/templates/machine-learning/immich-machine-learning.service.j2"
       dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
       when: "{{ immich_machine_learning_enabled }}"
+      component: machine_learning
+  register: immich_systemd_services_result
+
+- name: Determine whether the Immich services need a restart
+  ansible.builtin.set_fact:
+    immich_server_restart_necessary: "{{ 'server' in immich_changed_components }}"
+    immich_machine_learning_restart_necessary: "{{ 'machine_learning' in immich_changed_components }}"
+  vars:
+    immich_changed_components: >-
+      {{
+        (
+          immich_support_files_result.results | default([])
+          + immich_container_image_pull_result_ansible_module.results | default([])
+          + immich_container_image_pull_result_command.results | default([])
+          + immich_systemd_services_result.results | default([])
+        )
+        | selectattr('changed', 'defined') | selectattr('changed')
+        | map(attribute='item.component') | list
+        + (['server'] if immich_changed_networks | intersect([immich_server_container_network] + immich_server_container_additional_networks) | length > 0 else [])
+        + (['machine_learning'] if immich_changed_networks | intersect([immich_machine_learning_container_network] + immich_machine_learning_container_additional_networks) | length > 0 else [])
+      }}
+    # When its settings differ, community.docker.docker_network removes and recreates a network,
+    # and reconnects the running containers without their endpoint settings (such as network aliases).
+    immich_changed_networks: >-
+      {{
+        (
+          immich_network_creation_result_ansible_module.results | default([])
+          + immich_network_creation_result_command.results | default([])
+        )
+        | selectattr('changed', 'defined') | selectattr('changed')
+        | map(attribute='item') | list
+      }}
