@@ -153,7 +153,7 @@ immich_server_container_additional_networks_default: |-
   {{
     (
       [immich_machine_learning_container_network]
-      if immich_machine_learning_container_network != immich_server_container_network
+      if immich_machine_learning_enabled and immich_machine_learning_container_network != immich_server_container_network
       else []
     )
   }}
