@@ -65,6 +65,19 @@ immich_redis_dbindex: '0'
 # configure related services (e.g. exim-relay) based on its value.
 immich_smtp_host: ""
 
+# immich_server_restart_necessary and immich_machine_learning_restart_necessary
+# control whether the respective Immich systemd service will be restarted
+# (when true) or merely started (when false) by the systemd service manager
+# role (when conditional restart is enabled).
+#
+# These values are automatically computed during installation based on whether
+# the service's configuration files, its systemd service file or its container
+# image changed, or whether a network the service is attached to was created or
+# recreated. The default of `false` means "no restart needed" — appropriate
+# when the role's installation tasks haven't run (e.g., due to --tags skipping them).
+immich_server_restart_necessary: false
+immich_machine_learning_restart_necessary: false
+
 ########################################################################
 #                                                                      #
 # /common                                                              #
