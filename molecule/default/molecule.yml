@@ -72,7 +72,7 @@ provisioner:
         # Variables for Postgres.
         # Immich requires its own Postgres container image (with the vchord
         # and pgvector extensions) instead of vanilla Postgres, configured as
-        # described in mash-playbook's docs/services/immich.md.
+        # described in mash-playbook's documentation.
         postgres_uid: 999
         postgres_gid: 999
         postgres_container_uid: 0
