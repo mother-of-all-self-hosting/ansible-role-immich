@@ -1,8 +1,9 @@
-# SPDX-FileCopyrightText: 2023 - 2024 Nikita Chernyi
-# SPDX-FileCopyrightText: 2023 - 2025 MASH project contributors
-# SPDX-FileCopyrightText: 2023 - 2025 Slavi Pantaleev
-# SPDX-FileCopyrightText: 2025 Suguru Hirahara
+# SPDX-FileCopyrightText: 2023, 2024 Nikita Chernyi
+# SPDX-FileCopyrightText: 2023-2025 MASH project contributors
+# SPDX-FileCopyrightText: 2023-2025 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2024 Sergio Durigan Junior
 # SPDX-FileCopyrightText: 2025 IUCCA
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -93,16 +94,29 @@ immich_machine_learning_restart_necessary: false
 immich_server_enabled: true
 
 immich_server_identifier: "{{ immich_identifier }}-server"
-
 immich_server_base_path: "{{ immich_base_path }}/server"
-
 immich_server_data_path: "{{ immich_server_base_path }}/data"
 
 immich_server_version: "{{ immich_version }}"
 
+# The scheme used for serving Immich.
 immich_server_scheme: "{{ immich_scheme }}"
+
+# The hostname at which Immich is served.
 immich_server_hostname: "{{ immich_hostname }}"
+
+# The path at which Immich is served.
+# This value must either be `/` or not end with a slash (e.g. `/immich`).
 immich_server_path_prefix: "{{ immich_path_prefix }}"
+
+immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
+immich_server_container_image_tag: "{{ immich_server_version }}"
+immich_server_container_image_registry_prefix: "{{ immich_server_container_image_registry_prefix_upstream }}"
+immich_server_container_image_registry_prefix_upstream: "{{ immich_server_container_image_registry_prefix_upstream_default }}"
+immich_server_container_image_registry_prefix_upstream_default: ghcr.io/
+
+# The base container network for the server service. It will be auto-created by this role if it doesn't exist already.
+immich_server_container_network: "{{ immich_identifier }}"
 
 # Specify how the container publishes its HTTP port (as defined by `immich_server_container_http_port`).
 #
@@ -112,6 +126,21 @@ immich_server_container_http_host_bind_port: ""
 # The HTTP port used internally (in the container) by the server component
 immich_server_container_http_port: 2283
 
+# A list of additional container networks that the server container would be connected to.
+# The role does not create these networks, so make sure they already exist.
+# Use this to expose this container to another reverse proxy, which runs in a different container network.
+immich_server_container_additional_networks: "{{ (immich_server_container_additional_networks_default + immich_server_container_additional_networks_auto + immich_server_container_additional_networks_custom) | unique }}"
+immich_server_container_additional_networks_default: |-
+  {{
+    (
+      [immich_machine_learning_container_network]
+      if immich_machine_learning_enabled and immich_machine_learning_container_network != immich_server_container_network
+      else []
+    )
+  }}
+immich_server_container_additional_networks_auto: []
+immich_server_container_additional_networks_custom: []
+
 # Controls how to configure the server container for hardware acceleration for transcoding.
 #
 # One of: cpu, nvenc, quicksync, rkmpp, vaapi, vaapi-wsl
@@ -120,12 +149,6 @@ immich_server_container_http_port: 2283
 # - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/hwaccel.transcoding.yml
 # - https://github.com/immich-app/immich/blob/a122d4b969e4ed2b462f1325c2f84cb874a07936/docker/docker-compose.yml
 immich_server_transcoding_hardware_acceleration: cpu
-
-immich_server_container_image: "{{ immich_server_container_image_registry_prefix }}immich-app/immich-server:{{ immich_server_container_image_tag }}"
-immich_server_container_image_tag: "{{ immich_server_version }}"
-immich_server_container_image_registry_prefix: "{{ immich_server_container_image_registry_prefix_upstream }}"
-immich_server_container_image_registry_prefix_upstream: "{{ immich_server_container_image_registry_prefix_upstream_default }}"
-immich_server_container_image_registry_prefix_upstream_default: ghcr.io/
 
 # Controls the user that the server container runs as. Set to `0` to run as root.
 immich_server_container_uid: "{{ immich_uid }}"
@@ -146,24 +169,6 @@ immich_server_container_cap_add_capabilities_custom: []
 
 # Controls whether the server container runs with a read-only filesystem (`--read-only`).
 immich_server_container_read_only_enabled: true
-
-# The base container network for the server service. It will be auto-created by this role if it doesn't exist already.
-immich_server_container_network: "{{ immich_identifier }}"
-
-# A list of additional container networks that the server container would be connected to.
-# The role does not create these networks, so make sure they already exist.
-# Use this to expose this container to another reverse proxy, which runs in a different container network.
-immich_server_container_additional_networks: "{{ (immich_server_container_additional_networks_default + immich_server_container_additional_networks_auto + immich_server_container_additional_networks_custom) | unique }}"
-immich_server_container_additional_networks_default: |-
-  {{
-    (
-      [immich_machine_learning_container_network]
-      if immich_machine_learning_enabled and immich_machine_learning_container_network != immich_server_container_network
-      else []
-    )
-  }}
-immich_server_container_additional_networks_auto: []
-immich_server_container_additional_networks_custom: []
 
 # A list of additional "links" to attach to the container.
 # Contains definition objects like this: `"other-container-name:alias-inside-the-container"`.
