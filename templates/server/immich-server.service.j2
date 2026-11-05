@@ -50,7 +50,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
                 --link={{ link }} \
                 {% endfor %}
                 {% if immich_server_container_http_host_bind_port %}
-                -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_http_port }} \
+                -p {{ immich_server_container_http_host_bind_port }}:{{ immich_server_container_http_port }} \
                 {% endif %}
                 --env-file={{ immich_server_base_path }}/env \
                 --label-file={{ immich_server_base_path }}/labels \
