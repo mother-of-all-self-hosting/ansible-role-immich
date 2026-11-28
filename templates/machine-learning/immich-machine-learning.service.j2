@@ -29,55 +29,55 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_sh }} -c '{{ immich_mac
     the service to access the `/cache` directory (owned by a different user on the host).
 #}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
-                --rm \
-                --name={{ immich_machine_learning_identifier }} \
-                --log-driver=none \
-                --user={{ immich_machine_learning_container_uid }}:{{ immich_machine_learning_container_gid }} \
-                {% if immich_machine_learning_container_cap_drop_all_enabled %}
-                --cap-drop=ALL \
-                {% endif %}
-                {% if immich_machine_learning_container_cap_add_enabled %}
-                {% for cap in immich_machine_learning_container_cap_add_capabilities %}
-                --cap-add={{ cap }} \
-                {% endfor %}
-                {% endif %}
-                {% if immich_machine_learning_container_read_only_enabled %}
-                --read-only \
-                {% endif %}
-                --network={{ immich_machine_learning_container_network }} \
-                {% if immich_machine_learning_container_http_host_bind_port %}
-                -p {{ immich_machine_learning_container_http_host_bind_port }}:{{ immich_machine_learning_http_port }} \
-                {% endif %}
-                --env-file={{ immich_machine_learning_base_path }}/env \
-                {% if immich_machine_learning_container_tmpfs_tmp_enabled %}
-                --tmpfs=/tmp:rw,noexec,nosuid,size={{ immich_machine_learning_container_tmpfs_tmp_size }} \
-                {% else %}
-                --mount type=bind,src={{ immich_machine_learning_tmp_path }},dst=/tmp \
-                {% endif %}
-                --mount type=bind,src={{ immich_machine_learning_cache_path }},dst={{ immich_machine_learning_environment_variable_machine_learning_cache_folder }} \
-                --mount type=bind,src={{ immich_machine_learning_dot_cache_path }},dst=/.cache \
-                {% for volume in immich_machine_learning_container_additional_volumes %}
-                --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
-                {% endfor %}
-                {% for security_opt in immich_machine_learning_container_security_opt %}
-                --security-opt={{ security_opt }} \
-                {% endfor %}
-                {% for device in immich_machine_learning_container_devices %}
-                --device={{ device.src }}:{{ device.dst }}{{ (':' + device.options) if device.options else '' }} \
-                {% endfor %}
-                {% for device_cgroup_rule in immich_machine_learning_container_device_cgroup_rules %}
-                --device-cgroup-rule="{{ device_cgroup_rule }}" \
-                {% endfor %}
-                {% for gpu in immich_machine_learning_container_gpus %}
-                --gpus={{ gpu }} \
-                {% endfor %}
-                {% if immich_machine_learning_container_extra_arguments | length > 0 %}
-                {{ immich_machine_learning_container_extra_arguments | join(' ') }} \
-                {% endif %}
-                {{ immich_machine_learning_container_image }} \
-                {% for arg in immich_machine_learning_process_extra_arguments %}
-                {{ arg }} \
-                {% endfor %}
+      --rm \
+      --name={{ immich_machine_learning_identifier }} \
+      --log-driver=none \
+      --user={{ immich_machine_learning_container_uid }}:{{ immich_machine_learning_container_gid }} \
+      {% if immich_machine_learning_container_cap_drop_all_enabled %}
+      --cap-drop=ALL \
+      {% endif %}
+      {% if immich_machine_learning_container_cap_add_enabled %}
+      {% for cap in immich_machine_learning_container_cap_add_capabilities %}
+      --cap-add={{ cap }} \
+      {% endfor %}
+      {% endif %}
+      {% if immich_machine_learning_container_read_only_enabled %}
+      --read-only \
+      {% endif %}
+      --network={{ immich_machine_learning_container_network }} \
+      {% if immich_machine_learning_container_http_host_bind_port %}
+      -p {{ immich_machine_learning_container_http_host_bind_port }}:{{ immich_machine_learning_http_port }} \
+      {% endif %}
+      --env-file={{ immich_machine_learning_base_path }}/env \
+      {% if immich_machine_learning_container_tmpfs_tmp_enabled %}
+      --tmpfs=/tmp:rw,noexec,nosuid,size={{ immich_machine_learning_container_tmpfs_tmp_size }} \
+      {% else %}
+      --mount type=bind,src={{ immich_machine_learning_tmp_path }},dst=/tmp \
+      {% endif %}
+      --mount type=bind,src={{ immich_machine_learning_cache_path }},dst={{ immich_machine_learning_environment_variable_machine_learning_cache_folder }} \
+      --mount type=bind,src={{ immich_machine_learning_dot_cache_path }},dst=/.cache \
+      {% for volume in immich_machine_learning_container_additional_volumes %}
+      --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
+      {% endfor %}
+      {% for security_opt in immich_machine_learning_container_security_opt %}
+      --security-opt={{ security_opt }} \
+      {% endfor %}
+      {% for device in immich_machine_learning_container_devices %}
+      --device={{ device.src }}:{{ device.dst }}{{ (':' + device.options) if device.options else '' }} \
+      {% endfor %}
+      {% for device_cgroup_rule in immich_machine_learning_container_device_cgroup_rules %}
+      --device-cgroup-rule="{{ device_cgroup_rule }}" \
+      {% endfor %}
+      {% for gpu in immich_machine_learning_container_gpus %}
+      --gpus={{ gpu }} \
+      {% endfor %}
+      {% if immich_machine_learning_container_extra_arguments | length > 0 %}
+      {{ immich_machine_learning_container_extra_arguments | join(' ') }} \
+      {% endif %}
+      {{ immich_machine_learning_container_image }} \
+      {% for arg in immich_machine_learning_process_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
 
 {% for network in immich_machine_learning_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ immich_machine_learning_identifier }}
