@@ -30,6 +30,25 @@
             path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_server_identifier }}.service"
             state: absent
 
+        - name: Ensure Immich server container network does not exist
+          when: immich_server_container_network_deletion_enabled and immich_server_container_network != 'host'
+          block:
+            - name: Ensure Immich container network does not exist via community.docker.docker_network
+              when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
+              community.docker.docker_network:
+                name: "{{ immich_server_container_network }}"
+                state: absent
+              register: immich_network_deletion_result
+
+            - name: Ensure Immich container network does not exist via ansible.builtin.command
+              when: devture_systemd_docker_base_container_network_creation_method == 'command'
+              ansible.builtin.command:
+                cmd: >-
+                  {{ devture_systemd_docker_base_host_command_docker }} network rm
+                  {{ immich_server_container_network }}
+              register: immich_network_deletion_result
+              changed_when: immich_machine_learning_container_network in immich_network_deletion_result.stdout
+
         - name: Ensure Immich server base directory doesn't exist
           ansible.builtin.file:
             path: "{{ immich_server_base_path }}"
@@ -57,6 +76,25 @@
           ansible.builtin.file:
             path: "{{ devture_systemd_docker_base_systemd_path }}/{{ immich_machine_learning_identifier }}.service"
             state: absent
+
+        - name: Ensure Immich machine-learning container network does not exist
+          when: immich_machine_learning_container_network_deletion_enabled and immich_machine_learning_container_network != 'host'
+          block:
+            - name: Ensure Immich container network does not exist via community.docker.docker_network
+              when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
+              community.docker.docker_network:
+                name: "{{ immich_machine_learning_container_network }}"
+                state: absent
+              register: immich_network_deletion_result
+
+            - name: Ensure Immich container network does not exist via ansible.builtin.command
+              when: devture_systemd_docker_base_container_network_creation_method == 'command'
+              ansible.builtin.command:
+                cmd: >-
+                  {{ devture_systemd_docker_base_host_command_docker }} network rm
+                  {{ immich_machine_learning_container_network }}
+              register: immich_network_deletion_result
+              changed_when: immich_machine_learning_container_network in immich_network_deletion_result.stdout
 
         - name: Ensure Immich machine-learning base directory doesn't exist
           ansible.builtin.file:
